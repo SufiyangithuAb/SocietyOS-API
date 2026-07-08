@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SocietyOS Login Test</title>
+
+    <style>
+
+        body{
+            font-family:Arial;
+            background:#f5f5f5;
+            padding:40px;
+        }
+
+        .card{
+            max-width:450px;
+            margin:auto;
+            background:white;
+            padding:25px;
+            border-radius:10px;
+            box-shadow:0 0 10px rgba(0,0,0,.15);
+        }
+
+        input{
+            width:100%;
+            padding:12px;
+            margin-top:10px;
+            margin-bottom:15px;
+            font-size:16px;
+        }
+
+        button{
+            width:100%;
+            padding:12px;
+            font-size:16px;
+            cursor:pointer;
+        }
+
+        pre{
+            background:#222;
+            color:#00ff66;
+            padding:15px;
+            margin-top:20px;
+            overflow:auto;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>SocietyOS Login Test</h2>
+
+<input
+        id="email"
+        type="email"
+        value="admin@societyos.com"
+        placeholder="Email">
+
+<input
+        id="password"
+        type="password"
+        value="123456"
+        placeholder="Password">
+
+<button onclick="login()">
+    Login
+</button>
+
+<pre id="result">
+Waiting...
+</pre>
+
+</div>
+
+<script>
+
+async function login(){
+
+    document.getElementById("result").innerHTML="Loading...";
+
+    try{
+
+        const response =
+        await fetch(
+        "http://localhost:8080/public/index.php?route=auth&action=login",
+        {
+
+            method:"POST",
+
+            headers:{
+                "Content-Type":"application/json"
+            },
+
+            body:JSON.stringify({
+
+                email:document.getElementById("email").value,
+                password:document.getElementById("password").value
+
+            })
+
+        });
+
+        const text = await response.text();
+
+        document.getElementById("result").innerHTML=text;
+
+    }
+
+    catch(e){
+
+        document.getElementById("result").innerHTML=e;
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>

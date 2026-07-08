@@ -1,0 +1,28 @@
+# Environment
+.env
+.env.*
+
+# Logs
+*.log
+
+# Composer
+/vendor/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-data/
+
+# Uploads (optional)
+uploads/*
+!uploads/.gitkeep
+
+# Temporary
+tmp/
+cache/

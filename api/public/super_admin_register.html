@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SocietyOS - Super Admin Registration</title>
+
+<style>
+
+body{
+    margin:0;
+    padding:0;
+    background:#f4f6f9;
+    font-family:Arial,sans-serif;
+}
+
+.container{
+
+    width:420px;
+    margin:40px auto;
+    background:#fff;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,.15);
+
+}
+
+h2{
+
+    text-align:center;
+    color:#21755A;
+
+}
+
+input{
+
+    width:100%;
+    padding:12px;
+    margin-top:12px;
+    box-sizing:border-box;
+
+}
+
+button{
+
+    width:100%;
+    padding:14px;
+    margin-top:18px;
+    background:#21755A;
+    color:white;
+    border:none;
+    cursor:pointer;
+    font-size:16px;
+
+}
+
+button:hover{
+
+    background:#195b46;
+
+}
+
+pre{
+
+    background:#eeeeee;
+    padding:15px;
+    margin-top:20px;
+    white-space:pre-wrap;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>SocietyOS Super Admin</h2>
+
+<input type="text" id="society_name" placeholder="Society Name">
+
+<input type="text" id="admin_name" placeholder="Admin Name">
+
+<input type="email" id="email" placeholder="Email">
+
+<input type="text" id="phone" placeholder="Phone">
+
+<input type="password" id="password" placeholder="Password">
+
+<input type="text" id="city" placeholder="City">
+
+<input type="text" id="state" placeholder="State">
+
+<input type="text" id="country" placeholder="Country">
+
+<button onclick="registerSociety()">
+Register Society
+</button>
+
+<pre id="result"></pre>
+
+</div>
+
+<script>
+
+function registerSociety(){
+
+fetch("http://10.45.102.170:8080/public/index.php?route=auth&action=register",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+society_name:document.getElementById("society_name").value,
+
+admin_name:document.getElementById("admin_name").value,
+
+email:document.getElementById("email").value,
+
+phone:document.getElementById("phone").value,
+
+password:document.getElementById("password").value,
+
+city:document.getElementById("city").value,
+
+state:document.getElementById("state").value,
+
+country:document.getElementById("country").value
+
+})
+
+})
+
+.then(r=>r.json())
+
+.then(data=>{
+
+document.getElementById("result").textContent=
+JSON.stringify(data,null,4);
+
+})
+
+.catch(err=>{
+
+document.getElementById("result").textContent=
+err;
+
+});
+
+}
+
+</script>
+
+</body>
+</html>

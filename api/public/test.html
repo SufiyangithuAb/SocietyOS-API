@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SocietyOS Dashboard Test</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#f5f7fa;
+    padding:40px;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+}
+
+button{
+    padding:12px 25px;
+    font-size:16px;
+    cursor:pointer;
+    background:#21755A;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+}
+
+pre{
+    background:#222;
+    color:#00ff66;
+    padding:15px;
+    border-radius:10px;
+    overflow:auto;
+}
+
+.card{
+    background:#fff;
+    padding:15px;
+    margin-top:20px;
+    border-radius:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h2>SocietyOS Dashboard API Test</h2>
+
+<button onclick="loadDashboard()">
+Load Dashboard
+</button>
+
+<div class="card">
+
+<h3>API Response</h3>
+
+<pre id="result"></pre>
+
+</div>
+
+<div class="card">
+
+<h3>Dashboard Values</h3>
+
+<p><b>Residents :</b> <span id="residents">-</span></p>
+
+<p><b>Notices :</b> <span id="notices">-</span></p>
+
+<p><b>Complaints :</b> <span id="complaints">-</span></p>
+
+<p><b>Open Complaints :</b> <span id="open">-</span></p>
+
+<p><b>Paid Bills :</b> <span id="paid">-</span></p>
+
+<p><b>Unpaid Bills :</b> <span id="unpaid">-</span></p>
+
+<p><b>Collection :</b> ₹<span id="collection">-</span></p>
+
+<p><b>Pending :</b> ₹<span id="pending">-</span></p>
+
+</div>
+
+</div>
+
+<script>
+
+const TOKEN="4004e5b7d71ea42a3d2b973d7215617e0c1aa8c9fa0b887a7645404ad0544769";
+
+const URL="http://10.45.102.170:8080/public/index.php?route=dashboard";
+
+function loadDashboard(){
+
+fetch(URL,{
+headers:{
+Authorization:"Bearer "+TOKEN
+}
+})
+
+.then(res=>res.json())
+
+.then(data=>{
+
+document.getElementById("result").textContent=
+JSON.stringify(data,null,4);
+
+let d=data.data;
+
+document.getElementById("residents").innerText=d.total_residents;
+document.getElementById("notices").innerText=d.total_notices;
+document.getElementById("complaints").innerText=d.total_complaints;
+document.getElementById("open").innerText=d.open_complaints;
+document.getElementById("paid").innerText=d.paid_bills;
+document.getElementById("unpaid").innerText=d.unpaid_bills;
+document.getElementById("collection").innerText=d.total_collection;
+document.getElementById("pending").innerText=d.pending_collection;
+
+})
+
+.catch(err=>{
+
+alert(err);
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
