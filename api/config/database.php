@@ -1,12 +1,9 @@
 <?php
 
+require_once __DIR__ . "/../helpers/response.php";
+
 class Database
 {
-    private $host = "mysql";
-    private $db_name = "societyos";
-    private $username = "society";
-    private $password = "society123";
-
     private $conn;
 
     public function connect()
@@ -15,10 +12,18 @@ class Database
 
         try {
 
+            $host = getenv("mysql.railway.internal");
+            $port = getenv("3306");
+            $db   = getenv("railway");
+            $user = getenv("root");
+            $pass = getenv("KInyvkFHRxEzXDzBEmQbDXoRvyyNitaz");
+
+            $dsn = "mysql:host={$host};port={$port};dbname={$db};charset=utf8mb4";
+
             $this->conn = new PDO(
-                "mysql:host={$this->host};dbname={$this->db_name};charset=utf8mb4",
-                $this->username,
-                $this->password
+                $dsn,
+                $user,
+                $pass
             );
 
             $this->conn->setAttribute(
@@ -35,7 +40,10 @@ class Database
 
             response(
                 false,
-                "Database Connection Failed: " . $e->getMessage()
+                "Database Connection Failed",
+                [
+                    "error" => $e->getMessage()
+                ]
             );
 
         }
