@@ -12,11 +12,11 @@ class Database
 
         try {
 
-            $host = getenv("MYSQLHOST");
-            $port = getenv("MYSQLPORT");
-            $db   = getenv("MYSQLDATABASE");
-            $user = getenv("MYSQLUSER");
-            $pass = getenv("MYSQLPASSWORD");
+            $host = "mysql.railway.internal";
+            $port = "3306";
+            $db   = "railway";
+            $user = "root";
+            $pass = "KInyvkFHRxEzXDzBEmQbDXoRvyyNitaz";
 
             $dsn = "mysql:host={$host};port={$port};dbname={$db};charset=utf8mb4";
 
