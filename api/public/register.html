@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SocietyOS - Register Society</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f5f7fb;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.container{
+    width:420px;
+    background:#fff;
+    border-radius:15px;
+    padding:30px;
+    box-shadow:0 10px 30px rgba(0,0,0,.1);
+}
+
+h2{
+    color:#1f6f54;
+    text-align:center;
+    margin-bottom:25px;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    margin-top:12px;
+    border:1px solid #ddd;
+    border-radius:8px;
+    font-size:15px;
+}
+
+button{
+    width:100%;
+    margin-top:20px;
+    padding:13px;
+    border:none;
+    background:#1f6f54;
+    color:white;
+    font-size:16px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#16533f;
+}
+
+#result{
+    margin-top:20px;
+    padding:12px;
+    border-radius:8px;
+    display:none;
+}
+
+.success{
+    background:#e8f5e9;
+    color:#2e7d32;
+}
+
+.error{
+    background:#ffebee;
+    color:#c62828;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h2>🏢 SocietyOS Registration</h2>
+
+<input type="text" id="society_name" placeholder="Society Name">
+
+<input type="text" id="admin_name" placeholder="Admin Name">
+
+<input type="email" id="email" placeholder="Email">
+
+<input type="text" id="phone" placeholder="Phone">
+
+<input type="password" id="password" placeholder="Password">
+
+<input type="text" id="city" placeholder="City">
+
+<input type="text" id="state" placeholder="State">
+
+<input type="text" id="country" placeholder="Country">
+
+<button onclick="registerSociety()">
+Create Society
+</button>
+
+<div id="result"></div>
+
+</div>
+
+<script>
+
+async function registerSociety(){
+
+const body={
+
+society_name:
+document.getElementById("society_name").value,
+
+admin_name:
+document.getElementById("admin_name").value,
+
+email:
+document.getElementById("email").value,
+
+phone:
+document.getElementById("phone").value,
+
+password:
+document.getElementById("password").value,
+
+city:
+document.getElementById("city").value,
+
+state:
+document.getElementById("state").value,
+
+country:
+document.getElementById("country").value
+
+};
+
+const response=await fetch(
+"/?route=auth&action=register",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify(body)
+});
+
+const json=await response.json();
+
+const result=document.getElementById("result");
+
+result.style.display="block";
+
+if(json.success){
+
+result.className="success";
+
+result.innerHTML=
+"<b>✅ "+json.message+"</b>";
+
+}else{
+
+result.className="error";
+
+result.innerHTML=
+"<b>❌ "+json.message+"</b>";
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
