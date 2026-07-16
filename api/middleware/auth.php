@@ -42,7 +42,13 @@ if (DEV_MODE) {
 $headers = getallheaders();
 
 if (!isset($headers['Authorization'])) {
-    response(false, "Token missing");
+
+    http_response_code(401);
+
+    response(
+        false,
+        "Session expired. Please login again."
+    );
 }
 
 $token = str_replace(
@@ -61,7 +67,13 @@ $query->execute([$token]);
 $user = $query->fetch(PDO::FETCH_ASSOC);
 
 if (!$user) {
-    response(false, "Invalid token");
+
+    http_response_code(401);
+
+    response(
+        false,
+        "Your account was signed in on another device or your session has expired."
+    );
 }
 
 $GLOBALS['auth_user'] = $user;
