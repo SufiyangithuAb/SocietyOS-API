@@ -62,7 +62,6 @@ switch($route)
     case "device":
         require_once "../routes/device.php";
         break;
-
     default:
         echo json_encode([
             "success" => false,
