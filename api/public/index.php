@@ -59,6 +59,10 @@ switch($route)
         require_once "../routes/resident_app.php";
         break;
 
+    case "device":
+        require_once "../routes/device.php";
+        break;
+
     default:
         echo json_encode([
             "success" => false,
