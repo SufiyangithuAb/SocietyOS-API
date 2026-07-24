@@ -457,4 +457,126 @@ class FirebaseNotification
                 $failed
         ];
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notify One Specific Resident
+    |--------------------------------------------------------------------------
+    */
+
+    public function notifyResident(
+        $societyId,
+        $residentId,
+        $title,
+        $body,
+        $data = []
+    ) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Find the USER linked to this resident
+        |--------------------------------------------------------------------------
+        |
+        | residents.id = $residentId
+        | residents.user_id = users.id
+        | user_devices.user_id = users.id
+        |
+        */
+
+        $query = $this->db->prepare(
+            "SELECT DISTINCT ud.fcm_token
+            FROM residents r
+            INNER JOIN users u
+                ON u.id = r.user_id
+            INNER JOIN user_devices ud
+                ON ud.user_id = u.id
+            WHERE r.id = ?
+            AND r.society_id = ?
+            AND u.role = 'RESIDENT'
+            AND u.is_active = 1
+            AND ud.fcm_token IS NOT NULL
+            AND ud.fcm_token != ''"
+        );
+
+        $query->execute([
+            $residentId,
+            $societyId
+        ]);
+
+        $devices = $query->fetchAll(
+            PDO::FETCH_ASSOC
+        );
+
+        if (!$devices) {
+
+            error_log(
+                "FCM: No device found for resident " .
+                $residentId .
+                " in society " .
+                $societyId
+            );
+
+            return [
+                "sent" => 0,
+                "failed" => 0
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Generate Google OAuth token once
+        |--------------------------------------------------------------------------
+        */
+
+        $accessToken =
+            $this->getAccessToken();
+
+        if (!$accessToken) {
+
+            return [
+                "sent" => 0,
+                "failed" => count($devices)
+            ];
+        }
+
+        $sent = 0;
+        $failed = 0;
+
+        foreach ($devices as $device) {
+
+            $success =
+                $this->sendToToken(
+
+                    $accessToken,
+
+                    $device['fcm_token'],
+
+                    $title,
+
+                    $body,
+
+                    $data
+                );
+
+            if ($success) {
+                $sent++;
+            } else {
+                $failed++;
+            }
+        }
+
+        error_log(
+            "FCM BILL RESULT: Resident=" .
+            $residentId .
+            " Sent=" .
+            $sent .
+            " Failed=" .
+            $failed
+        );
+
+        return [
+            "sent" => $sent,
+            "failed" => $failed
+        ];
+    }
 }
