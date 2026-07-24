@@ -2,24 +2,44 @@
 
 require_once "../models/MaintenanceBill.php";
 require_once "../helpers/response.php";
+require_once "../helpers/FirebaseNotification.php";
 
 class MaintenanceBillController
 {
     private $bill;
+    private $notification;
 
     public function __construct($db)
     {
-        $this->bill = new MaintenanceBill($db);
+        $this->bill =
+            new MaintenanceBill($db);
+
+        $this->notification =
+            new FirebaseNotification($db);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CREATE MAINTENANCE BILL
+    |--------------------------------------------------------------------------
+    */
 
     public function create()
     {
-        $user = $GLOBALS['auth_user'];
+        $user =
+            $GLOBALS['auth_user'];
 
-        $data = json_decode(
-            file_get_contents("php://input"),
-            true
-        );
+        $data =
+            json_decode(
+                file_get_contents("php://input"),
+                true
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate fields
+        |--------------------------------------------------------------------------
+        */
 
         if(
             empty($data['resident_id']) ||
@@ -27,37 +47,133 @@ class MaintenanceBillController
             empty($data['amount'])
         )
         {
-            response(false, "Required fields missing");
-        }
-
-        $result = $this->bill->create(
-            $user['society_id'],
-            $data['resident_id'],
-            $data['bill_month'],
-            $data['amount']
-        );
-
-        if($result)
-        {
             response(
-                true,
-                "Bill created successfully"
+                false,
+                "Required fields missing"
             );
         }
 
+        $residentId =
+            $data['resident_id'];
+
+        $billMonth =
+            trim($data['bill_month']);
+
+        $amount =
+            $data['amount'];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create bill first
+        |--------------------------------------------------------------------------
+        */
+
+        $result =
+            $this->bill->create(
+
+                $user['society_id'],
+
+                $residentId,
+
+                $billMonth,
+
+                $amount
+            );
+
+        if (!$result)
+        {
+            response(
+                false,
+                "Failed to create bill"
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Bill created successfully
+        | Send notification ONLY to that resident
+        |--------------------------------------------------------------------------
+        */
+
+        try {
+
+            $notificationTitle =
+                "💳 New Maintenance Bill";
+
+            $notificationBody =
+                "A maintenance bill of ₹" .
+                $amount .
+                " has been generated for " .
+                $billMonth .
+                ".";
+
+            $this->notification
+                ->notifyResident(
+
+                    $user['society_id'],
+
+                    $residentId,
+
+                    $notificationTitle,
+
+                    $notificationBody,
+
+                    [
+                        "type" =>
+                            "BILL",
+
+                        "screen" =>
+                            "BILLS",
+
+                        "resident_id" =>
+                            (string) $residentId,
+
+                        "bill_month" =>
+                            (string) $billMonth
+                    ]
+                );
+
+        } catch (Throwable $e) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Bill must remain successfully created even if FCM fails
+            |--------------------------------------------------------------------------
+            */
+
+            error_log(
+                "BILL FCM ERROR: " .
+                $e->getMessage()
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return success
+        |--------------------------------------------------------------------------
+        */
+
         response(
-            false,
-            "Failed to create bill"
+            true,
+            "Bill created successfully"
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | LIST BILLS
+    |--------------------------------------------------------------------------
+    */
+
     public function list()
     {
-        $user = $GLOBALS['auth_user'];
+        $user =
+            $GLOBALS['auth_user'];
 
-        $bills = $this->bill->getAll(
-            $user['society_id']
-        );
+        $bills =
+            $this->bill->getAll(
+                $user['society_id']
+            );
 
         response(
             true,
@@ -66,16 +182,25 @@ class MaintenanceBillController
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | MARK BILL PAID
+    |--------------------------------------------------------------------------
+    */
+
     public function markPaid()
     {
-        $user = $GLOBALS['auth_user'];
+        $user =
+            $GLOBALS['auth_user'];
 
-        $id = $_GET['id'] ?? 0;
+        $id =
+            $_GET['id'] ?? 0;
 
-        $result = $this->bill->markPaid(
-            $id,
-            $user['society_id']
-        );
+        $result =
+            $this->bill->markPaid(
+                $id,
+                $user['society_id']
+            );
 
         if($result > 0)
         {
