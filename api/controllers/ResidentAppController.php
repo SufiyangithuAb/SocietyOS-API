@@ -2,14 +2,20 @@
 
 require_once "../models/ResidentApp.php";
 require_once "../helpers/response.php";
+require_once "../helpers/FirebaseNotification.php";
 
 class ResidentAppController
 {
     private $resident;
+    private $notification;
 
     public function __construct($db)
     {
-        $this->resident = new ResidentApp($db);
+        $this->resident =
+            new ResidentApp($db);
+
+        $this->notification =
+            new FirebaseNotification($db);
     }
 
     /*
@@ -117,49 +123,134 @@ class ResidentAppController
         );
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Create Complaint
-    |--------------------------------------------------------------------------
-    */
-
     public function createComplaint()
     {
-        $user = $GLOBALS['auth_user'];
+        $user =
+            $GLOBALS['auth_user'];
 
-        $data = json_decode(
-            file_get_contents("php://input"),
-            true
-        );
+        $data =
+            json_decode(
+                file_get_contents("php://input"),
+                true
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate
+        |--------------------------------------------------------------------------
+        */
 
         if(empty($data['title']))
         {
-            response(false,"Complaint title required");
+            response(
+                false,
+                "Complaint title required"
+            );
         }
 
-        $result = $this->resident->createComplaint(
+        $title =
+            trim($data['title']);
 
-            $user['id'],
+        $description =
+            trim(
+                $data['description'] ?? ''
+            );
 
-            $data['title'],
+        $category =
+            trim(
+                $data['category'] ?? 'OTHER'
+            );
 
-            $data['description'] ?? '',
+        /*
+        |--------------------------------------------------------------------------
+        | Create complaint first
+        |--------------------------------------------------------------------------
+        */
 
-            $data['category'] ?? 'OTHER'
+        $result =
+            $this->resident->createComplaint(
 
-        );
+                $user['id'],
 
-        if($result)
+                $title,
+
+                $description,
+
+                $category
+
+            );
+
+        if (!$result)
         {
             response(
-                true,
-                "Complaint Submitted Successfully"
+                false,
+                "Unable to Submit Complaint"
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Complaint created successfully
+        | Notify ADMIN(s) of the same society
+        |--------------------------------------------------------------------------
+        */
+
+        try {
+
+            $notificationBody =
+                !empty($description)
+                    ? $description
+                    : "A resident has submitted a new complaint.";
+
+            if (
+                strlen($notificationBody) > 150
+            ) {
+
+                $notificationBody =
+                    substr(
+                        $notificationBody,
+                        0,
+                        147
+                    ) . "...";
+            }
+
+            $this->notification
+                ->notifyAdmins(
+
+                    $user['society_id'],
+
+                    "⚠️ New Complaint: " . $title,
+
+                    $notificationBody,
+
+                    [
+                        "type" =>
+                            "COMPLAINT",
+
+                        "screen" =>
+                            "COMPLAINTS",
+
+                        "category" =>
+                            (string) $category
+                    ]
+                );
+
+        } catch (Throwable $e) {
+
+            /*
+            | Complaint is already saved.
+            | FCM failure must not make complaint submission fail.
+            */
+
+            error_log(
+                "COMPLAINT FCM ERROR: " .
+                $e->getMessage()
             );
         }
 
         response(
-            false,
-            "Unable to Submit Complaint"
+            true,
+            "Complaint Submitted Successfully"
         );
     }
 }
