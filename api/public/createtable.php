@@ -1,53 +1,67 @@
 <?php
 
-require_once __DIR__ . "/../helpers/response.php";
+require_once "../config/database.php";
 
-class Database
-{
-    private $conn;
+try {
 
-    public function connect()
-    {
-        $this->conn = null;
+    $db = Database::connect();
 
-        try {
+    $sql = "
+    CREATE TABLE IF NOT EXISTS payments (
 
-            $host = "mysql.railway.internal";
-            $port = "3306";
-            $db   = "railway";
-            $user = "root";
-            $pass = "KInyvkFHRxEzXDzBEmQbDXoRvyyNitaz";
+        id INT AUTO_INCREMENT PRIMARY KEY,
 
-            $dsn = "mysql:host={$host};port={$port};dbname={$db};charset=utf8mb4";
+        society_id INT NOT NULL,
 
-            $this->conn = new PDO(
-                $dsn,
-                $user,
-                $pass
-            );
+        user_id INT NOT NULL,
 
-            $this->conn->setAttribute(
-                PDO::ATTR_ERRMODE,
-                PDO::ERRMODE_EXCEPTION
-            );
+        plan_name VARCHAR(100) NOT NULL,
 
-            $this->conn->setAttribute(
-                PDO::ATTR_DEFAULT_FETCH_MODE,
-                PDO::FETCH_ASSOC
-            );
+        amount DECIMAL(10,2) NOT NULL,
 
-        } catch (PDOException $e) {
+        currency VARCHAR(10) NOT NULL DEFAULT 'INR',
 
-            response(
-                false,
-                "Database Connection Failed",
-                [
-                    "error" => $e->getMessage()
-                ]
-            );
+        razorpay_order_id VARCHAR(100) NOT NULL UNIQUE,
 
-        }
+        razorpay_payment_id VARCHAR(100) DEFAULT NULL,
 
-        return $this->conn;
-    }
+        razorpay_signature TEXT,
+
+        payment_method VARCHAR(50) DEFAULT NULL,
+
+        status ENUM(
+            'CREATED',
+            'SUCCESS',
+            'FAILED',
+            'REFUNDED'
+        ) DEFAULT 'CREATED',
+
+        paid_at DATETIME DEFAULT NULL,
+
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ON UPDATE CURRENT_TIMESTAMP,
+
+        CONSTRAINT fk_payment_society
+            FOREIGN KEY (society_id)
+            REFERENCES societies(id)
+            ON DELETE CASCADE,
+
+        CONSTRAINT fk_payment_user
+            FOREIGN KEY (user_id)
+            REFERENCES users(id)
+            ON DELETE CASCADE
+
+    );
+    ";
+
+    $db->exec($sql);
+
+    echo "Payments table created successfully.";
+
+} catch (PDOException $e) {
+
+    die($e->getMessage());
+
 }
