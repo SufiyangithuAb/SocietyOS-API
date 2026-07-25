@@ -146,42 +146,123 @@ class PaymentController
             response(false, "Missing payment details");
         }
 
+        $payment = $this->payment->getByOrderId(
+            $data["razorpay_order_id"]
+        );
+
+        if (!$payment) {
+            response(false, "Payment not found");
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent duplicate verification
+        |--------------------------------------------------------------------------
+        */
+
+        if ($payment["status"] === "SUCCESS") {
+
+            response(
+                true,
+                "Payment already verified"
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Security Check
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $payment["society_id"] !=
+            $user["society_id"]
+        ) {
+
+            response(
+                false,
+                "Unauthorized payment"
+            );
+        }
+
         try {
 
+            /*
+            |--------------------------------------------------------------------------
+            | Verify Razorpay Signature
+            |--------------------------------------------------------------------------
+            */
+
             $this->razorpay->verifySignature([
-                "razorpay_order_id"   => $data["razorpay_order_id"],
-                "razorpay_payment_id" => $data["razorpay_payment_id"],
-                "razorpay_signature"  => $data["razorpay_signature"]
+
+                "razorpay_order_id" =>
+                    $data["razorpay_order_id"],
+
+                "razorpay_payment_id" =>
+                    $data["razorpay_payment_id"],
+
+                "razorpay_signature" =>
+                    $data["razorpay_signature"]
+
             ]);
 
-            $payment = $this->payment->getByOrderId(
-                $data["razorpay_order_id"]
-            );
-
-            if (!$payment) {
-                response(false, "Payment not found");
-            }
+            /*
+            |--------------------------------------------------------------------------
+            | Get Plan Details
+            |--------------------------------------------------------------------------
+            */
 
             $plan = $this->plan->getByName(
                 $payment["plan_name"]
             );
 
             if (!$plan) {
-                response(false, "Plan not found");
+
+                response(
+                    false,
+                    "Plan not found"
+                );
             }
 
+            /*
+            |--------------------------------------------------------------------------
+            | Update Payment
+            |--------------------------------------------------------------------------
+            */
+
             $this->payment->markSuccess(
+
                 $data["razorpay_order_id"],
+
                 $data["razorpay_payment_id"],
+
                 $data["razorpay_signature"]
+
             );
 
+            /*
+            |--------------------------------------------------------------------------
+            | Activate Subscription
+            |--------------------------------------------------------------------------
+            */
+
             $this->subscription->activatePremium(
+
                 $payment["society_id"],
+
                 $payment["plan_name"],
+
                 $payment["amount"],
+
                 $plan["duration_days"]
+
             );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Send Notification
+            |--------------------------------------------------------------------------
+            */
 
             try {
 
@@ -197,8 +278,10 @@ class PaymentController
 
                     [
                         "type" => "PREMIUM",
-                        "screen" => "SUBSCRIPTION"
+                        "screen" => "SUBSCRIPTION",
+                        "plan" => $payment["plan_name"]
                     ]
+
                 );
 
             } catch (Throwable $e) {
@@ -218,6 +301,11 @@ class PaymentController
 
             $this->payment->markFailed(
                 $data["razorpay_order_id"]
+            );
+
+            error_log(
+                "RAZORPAY VERIFY ERROR: " .
+                $e->getMessage()
             );
 
             response(
