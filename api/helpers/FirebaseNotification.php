@@ -585,14 +585,14 @@ class FirebaseNotification
     | Notify Admins of One Society
     |--------------------------------------------------------------------------
     */
-    
+
     public function notifyAdmins(
         $societyId,
         $title,
         $body,
         $data = []
     ) {
-    
+
         /*
         |--------------------------------------------------------------------------
         | Get ADMIN devices belonging only to this society
@@ -620,18 +620,37 @@ class FirebaseNotification
         );
     
         if (!$devices) {
-    
+        $query = $this->db->prepare(
+            "SELECT DISTINCT ud.fcm_token
+            FROM user_devices ud
+            INNER JOIN users u
+                ON u.id = ud.user_id
+            WHERE u.society_id = ?
+            AND u.role = 'ADMIN'
+            AND u.is_active = 1
+            AND ud.fcm_token IS NOT NULL
+            AND ud.fcm_token != ''"
+        );
+
+        $query->execute([
+            $societyId
+        ]);
+
+        $devices = $query->fetchAll(
+            PDO::FETCH_ASSOC
+        );
+
+        if (!$devices) {
             error_log(
                 "FCM: No admin devices found for society " .
                 $societyId
             );
-    
             return [
                 "sent" => 0,
                 "failed" => 0
             ];
         }
-    
+
         /*
         |--------------------------------------------------------------------------
         | Generate OAuth token once
@@ -642,7 +661,11 @@ class FirebaseNotification
             $this->getAccessToken();
     
         if (!$accessToken) {
-    
+
+        $accessToken =
+            $this->getAccessToken();
+
+        if (!$accessToken) {
             return [
                 "sent" => 0,
                 "failed" => count($devices)
@@ -677,7 +700,35 @@ class FirebaseNotification
                 $failed++;
             }
         }
-    
+
+        $sent = 0;
+        $failed = 0;
+
+        foreach ($devices as $device) {
+
+            $success =
+                $this->sendToToken(
+
+                    $accessToken,
+
+                    $device['fcm_token'],
+
+                    $title,
+
+                    $body,
+
+                    $data
+                );
+
+            if ($success) {
+
+                $sent++;
+
+            } else {
+
+                $failed++;
+            }
+        }
         error_log(
             "FCM ADMIN RESULT: Society=" .
             $societyId .
@@ -686,10 +737,12 @@ class FirebaseNotification
             " Failed=" .
             $failed
         );
-    
         return [
             "sent" => $sent,
             "failed" => $failed
         ];
     }
+
+}
+}
 }
