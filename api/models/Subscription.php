@@ -64,4 +64,30 @@ class Subscription
 
         return $subscription;
     }
+
+    public function activatePremium(
+        $societyId,
+        $planName,
+        $amount,
+        $durationDays
+    )
+    {
+        $query = $this->conn->prepare("
+            UPDATE subscriptions
+            SET
+                plan_name = ?,
+                amount = ?,
+                start_date = CURDATE(),
+                expiry_date = DATE_ADD(CURDATE(), INTERVAL ? DAY),
+                status = 'ACTIVE'
+            WHERE society_id = ?
+        ");
+
+        return $query->execute([
+            $planName,
+            $amount,
+            $durationDays,
+            $societyId
+        ]);
+    }
 }

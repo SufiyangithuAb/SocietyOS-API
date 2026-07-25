@@ -70,6 +70,14 @@ switch($route)
     case "payment":
         require_once "../routes/payment.php";
         break;
+
+    case "create-order":
+        $controller->createOrder();
+        break;
+
+    case "verify":
+        $controller->verify();
+        break;
     default:
         echo json_encode([
             "success" => false,

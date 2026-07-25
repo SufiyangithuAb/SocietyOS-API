@@ -42,13 +42,16 @@ class Payment
 
     public function getByOrderId($orderId)
     {
-        $query = $this->db->prepare(
-            "SELECT * FROM payments WHERE razorpay_order_id=?"
-        );
+        $query = $this->db->prepare("
+            SELECT *
+            FROM payments
+            WHERE razorpay_order_id = ?
+            LIMIT 1
+        ");
 
         $query->execute([$orderId]);
 
-        return $query->fetch();
+        return $query->fetch(PDO::FETCH_ASSOC);
     }
 
     public function markSuccess(

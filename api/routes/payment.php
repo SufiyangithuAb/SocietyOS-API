@@ -17,6 +17,12 @@ switch ($action) {
 
         break;
 
+    case "verify":
+
+        $controller->verify();
+
+        break;
+
     default:
 
         response(
