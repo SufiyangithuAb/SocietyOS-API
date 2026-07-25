@@ -9,18 +9,14 @@ try {
     $db = $database->connect();
 
     $sql = "
-    CREATE TABLE plans (
+    INSERT INTO plans
+(name, amount, duration_days, description)
+VALUES
+('BASIC', 999, 365, 'Basic Society Plan'),
 
-    id INT AUTO_INCREMENT PRIMARY KEY,
+('PREMIUM', 1999, 365, 'Premium Society Plan'),
 
-    name VARCHAR(50),
-
-    amount DECIMAL(10,2),
-
-    duration_days INT,
-
-    is_active TINYINT(1) DEFAULT 1
-);
+('ENTERPRISE', 4999, 365, 'Enterprise Society Plan');
     ";
 
     $db->exec($sql);
