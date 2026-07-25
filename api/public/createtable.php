@@ -9,53 +9,18 @@ try {
     $db = $database->connect();
 
     $sql = "
-    CREATE TABLE IF NOT EXISTS payments (
+    CREATE TABLE plans (
 
-        id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
 
-        society_id INT NOT NULL,
+    name VARCHAR(50),
 
-        user_id INT NOT NULL,
+    amount DECIMAL(10,2),
 
-        plan_name VARCHAR(100) NOT NULL,
+    duration_days INT,
 
-        amount DECIMAL(10,2) NOT NULL,
-
-        currency VARCHAR(10) NOT NULL DEFAULT 'INR',
-
-        razorpay_order_id VARCHAR(100) NOT NULL UNIQUE,
-
-        razorpay_payment_id VARCHAR(100) DEFAULT NULL,
-
-        razorpay_signature TEXT,
-
-        payment_method VARCHAR(50) DEFAULT NULL,
-
-        status ENUM(
-            'CREATED',
-            'SUCCESS',
-            'FAILED',
-            'REFUNDED'
-        ) DEFAULT 'CREATED',
-
-        paid_at DATETIME DEFAULT NULL,
-
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            ON UPDATE CURRENT_TIMESTAMP,
-
-        CONSTRAINT fk_payment_society
-            FOREIGN KEY (society_id)
-            REFERENCES societies(id)
-            ON DELETE CASCADE,
-
-        CONSTRAINT fk_payment_user
-            FOREIGN KEY (user_id)
-            REFERENCES users(id)
-            ON DELETE CASCADE
-
-    );
+    is_active TINYINT(1) DEFAULT 1
+);
     ";
 
     $db->exec($sql);
