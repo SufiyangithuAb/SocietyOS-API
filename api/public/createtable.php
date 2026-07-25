@@ -4,7 +4,9 @@ require_once "../config/database.php";
 
 try {
 
-    $db = Database::connect();
+
+    $database = new Database();
+    $db = $database->connect();
 
     $sql = "
     CREATE TABLE IF NOT EXISTS payments (
