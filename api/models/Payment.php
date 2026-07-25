@@ -55,10 +55,10 @@ class Payment
     }
 
     public function markSuccess(
-        $orderId,
-        $paymentId,
-        $signature,
-        $method
+    $orderId,
+    $paymentId,
+    $signature,
+    $method = null
     )
     {
         $query = $this->db->prepare("
