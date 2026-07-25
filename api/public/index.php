@@ -62,6 +62,14 @@ switch($route)
     case "device":
         require_once "../routes/device.php";
         break;
+
+    case "plans":
+        require_once "../routes/plans.php";
+        break;
+
+    case "payment":
+        require_once "../routes/payment.php";
+        break;
     default:
         echo json_encode([
             "success" => false,
