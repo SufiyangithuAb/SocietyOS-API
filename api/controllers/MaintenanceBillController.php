@@ -3,14 +3,18 @@
 require_once "../models/MaintenanceBill.php";
 require_once "../helpers/response.php";
 require_once "../helpers/FirebaseNotification.php";
+require_once "../helpers/SubscriptionMiddleware.php";
 
 class MaintenanceBillController
 {
     private $bill;
     private $notification;
+    private $db;
 
     public function __construct($db)
     {
+        $this->db = $db;
+
         $this->bill =
             new MaintenanceBill($db);
 
@@ -28,6 +32,11 @@ class MaintenanceBillController
     {
         $user =
             $GLOBALS['auth_user'];
+
+        SubscriptionMiddleware::requireActive(
+            $this->db,
+            $user["society_id"]
+        );
 
         $data =
             json_decode(
