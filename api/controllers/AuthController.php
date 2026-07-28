@@ -104,13 +104,37 @@ class AuthController
             $hashedPassword
         );
 
-        $this->subscription->createTrial(
-            $societyId
-        );
+        $this->subscription->createTrial($societyId);
 
+        // Fetch newly created user
+        $user = $this->user->findByEmail($data['email']);
+        
+        // Generate token
+        $token = bin2hex(random_bytes(32));
+        
+        // Save token
+        $update = $this->conn->prepare("
+            UPDATE users
+            SET api_token = ?
+            WHERE id = ?
+        ");
+        
+        $update->execute([
+            $token,
+            $user['id']
+        ]);
+        
         response(
             true,
-            "Society registered successfully"
+            "Society registered successfully",
+            [
+                "user_id" => $user["id"],
+                "society_id" => $user["society_id"],
+                "name" => $user["name"],
+                "email" => $user["email"],
+                "role" => $user["role"],
+                "token" => $token
+            ]
         );
     }
 
