@@ -39,29 +39,44 @@ class Subscription
 
     public function getCurrentSubscription($societyId)
     {
-        $query = $this->conn->prepare(
-            "SELECT
+        $query = $this->conn->prepare("
+            SELECT
                 plan_name,
                 amount,
                 start_date,
                 expiry_date,
                 status,
-                DATEDIFF(expiry_date, CURDATE()) AS days_left
-             FROM subscriptions
-             WHERE society_id = ?
-             AND status = 'ACTIVE'
-             ORDER BY id DESC
-             LIMIT 1"
-        );
+                GREATEST(DATEDIFF(expiry_date, CURDATE()), 0) AS days_left
+            FROM subscriptions
+            WHERE society_id = ?
+            ORDER BY id DESC
+            LIMIT 1
+        ");
 
         $query->execute([$societyId]);
 
         $subscription = $query->fetch(PDO::FETCH_ASSOC);
 
         if (!$subscription) {
-
             return null;
+        }
 
+        // Auto-update status if expired
+        if (
+            $subscription["status"] === "ACTIVE" &&
+            strtotime($subscription["expiry_date"]) < strtotime(date("Y-m-d"))
+        ) {
+
+            $update = $this->conn->prepare("
+                UPDATE subscriptions
+                SET status = 'EXPIRED'
+                WHERE society_id = ?
+            ");
+
+            $update->execute([$societyId]);
+
+            $subscription["status"] = "EXPIRED";
+            $subscription["days_left"] = 0;
         }
 
         return $subscription;
