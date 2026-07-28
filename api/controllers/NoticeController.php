@@ -3,14 +3,18 @@
 require_once "../models/Notice.php";
 require_once "../helpers/response.php";
 require_once "../helpers/FirebaseNotification.php";
+require_once "../helpers/SubscriptionMiddleware.php";
 
 class NoticeController
 {
     private $notice;
     private $notification;
+    private $db;
 
     public function __construct($db)
     {
+        $this->db = $db;
+        
         $this->notice =
             new Notice($db);
 
@@ -22,6 +26,11 @@ class NoticeController
     {
         $user =
             $GLOBALS['auth_user'];
+
+        SubscriptionMiddleware::requireActive(
+            $this->db,
+            $user["society_id"]
+        );
 
         $data =
             json_decode(
@@ -181,6 +190,11 @@ class NoticeController
     public function delete()
     {
         $user = $GLOBALS['auth_user'];
+
+        SubscriptionMiddleware::requireActive(
+            $this->db,
+            $user["society_id"]
+        );
 
         $id = $_GET['id'] ?? 0;
 

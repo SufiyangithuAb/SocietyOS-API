@@ -3,14 +3,18 @@
 require_once "../models/Complaint.php";
 require_once "../helpers/response.php";
 require_once "../helpers/FirebaseNotification.php";
+require_once "../helpers/SubscriptionMiddleware.php";
 
 class ComplaintController
 {
     private $complaint;
     private $notification;
+    private $db;
 
     public function __construct($db)
     {
+        $this->db = $db;
+        
         $this->complaint =
             new Complaint($db);
 
@@ -95,6 +99,11 @@ class ComplaintController
     {
         $user =
             $GLOBALS['auth_user'];
+
+        SubscriptionMiddleware::requireActive(
+            $this->db,
+            $user["society_id"]
+        );
 
         $id =
             $_GET['id'] ?? 0;

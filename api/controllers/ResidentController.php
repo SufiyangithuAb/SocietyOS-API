@@ -3,6 +3,7 @@
 require_once "../models/User.php";
 require_once "../models/Resident.php";
 require_once "../helpers/response.php";
+require_once "../helpers/SubscriptionMiddleware.php";
 
 class ResidentController
 {
@@ -22,6 +23,11 @@ class ResidentController
     public function create()
     {
         $admin = $GLOBALS['auth_user'];
+
+        SubscriptionMiddleware::requireActive(
+            $this->db,
+            $admin["society_id"]
+        );
 
         $data = json_decode(
             file_get_contents("php://input"),

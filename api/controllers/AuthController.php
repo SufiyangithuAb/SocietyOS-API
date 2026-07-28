@@ -105,8 +105,6 @@ class AuthController
         );
 
         $this->subscription->createTrial($societyId);
-<<<<<<< HEAD
-=======
 
         // Fetch newly created user
         $user = $this->user->findByEmail($data['email']);
@@ -125,7 +123,6 @@ class AuthController
             $token,
             $user['id']
         ]);
->>>>>>> ac76de0 (Updation authcontrol)
 
         // Fetch newly created user
         $user = $this->user->findByEmail($data['email']);
