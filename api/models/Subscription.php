@@ -90,4 +90,41 @@ class Subscription
             $societyId
         ]);
     }
+
+    public function isActive($societyId)
+    {
+        $query = $this->db->prepare("
+            SELECT *
+            FROM subscriptions
+            WHERE society_id = ?
+            LIMIT 1
+        ");
+
+        $query->execute([$societyId]);
+
+        $subscription = $query->fetch(PDO::FETCH_ASSOC);
+
+        if (!$subscription) {
+            return false;
+        }
+
+        if ($subscription["status"] !== "ACTIVE") {
+            return false;
+        }
+
+        if (strtotime($subscription["expiry_date"]) < strtotime(date("Y-m-d"))) {
+
+            $update = $this->db->prepare("
+                UPDATE subscriptions
+                SET status='EXPIRED'
+                WHERE society_id=?
+            ");
+
+            $update->execute([$societyId]);
+
+            return false;
+        }
+
+        return true;
+    }
 }
