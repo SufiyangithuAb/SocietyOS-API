@@ -105,6 +105,27 @@ class AuthController
         );
 
         $this->subscription->createTrial($societyId);
+<<<<<<< HEAD
+=======
+
+        // Fetch newly created user
+        $user = $this->user->findByEmail($data['email']);
+
+        // Generate token
+        $token = bin2hex(random_bytes(32));
+
+        // Save token
+        $update = $this->conn->prepare("
+            UPDATE users
+            SET api_token = ?
+            WHERE id = ?
+        ");
+
+        $update->execute([
+            $token,
+            $user['id']
+        ]);
+>>>>>>> ac76de0 (Updation authcontrol)
 
         // Fetch newly created user
         $user = $this->user->findByEmail($data['email']);
