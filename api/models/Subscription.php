@@ -3,10 +3,12 @@
 class Subscription
 {
     private $conn;
+    private $db;
 
     public function __construct($db)
     {
         $this->conn = $db;
+        $this->db = $db;
     }
 
     public function createTrial($societyId)
