@@ -39,7 +39,7 @@ class AuthController
             exit;
         }
 
-        if ($user['status'] !== 'active') {
+        if ($user['status'] !== 'ACTIVE') {
             setFlash("danger", "Your account has been disabled.");
             header("Location: ../login.php");
             exit;
