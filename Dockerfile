@@ -2,7 +2,7 @@ FROM dunglas/frankenphp:1-php8.2
 
 WORKDIR /app
 
-COPY ./api /app
+COPY . /app
 
 RUN docker-php-ext-install pdo pdo_mysql
 
