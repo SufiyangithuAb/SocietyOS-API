@@ -1,75 +1,64 @@
 <?php
 
-require_once "../../middleware/auth.php";
-
-$user = $_SESSION['super_admin'];
+require_once "../layouts/header.php";
+require_once "../layouts/navbar.php";
+require_once "../layouts/sidebar.php";
 
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
+<div class="content-wrapper">
 
-<head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Dashboard | SocietyOS</title>
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet">
-
-</head>
-
-<body class="bg-light">
-
-<nav class="navbar navbar-dark bg-primary">
+<section class="content-header">
 
 <div class="container-fluid">
 
-<span class="navbar-brand">
+<div class="row mb-2">
 
-🏢 SocietyOS Super Admin
+<div class="col-sm-6">
 
-</span>
+<h1>Dashboard</h1>
 
-<div class="text-white">
+</div>
 
-Welcome,
+<div class="col-sm-6 text-end">
+
+<small class="text-muted">
+
+Welcome back,
 
 <strong><?= htmlspecialchars($user['name']) ?></strong>
 
-|
-
-<a
-href="../../controllers/AuthController.php?action=logout"
-class="text-white text-decoration-none">
-
-Logout
-
-</a>
+</small>
 
 </div>
 
 </div>
 
-</nav>
+</div>
 
-<div class="container mt-5">
+</section>
+
+<section class="content">
+
+<div class="container-fluid">
 
 <div class="row">
 
-<div class="col-md-3">
+<div class="col-lg-3 col-6">
 
-<div class="card shadow-sm">
+<div class="small-box bg-primary">
 
-<div class="card-body text-center">
+<div class="inner">
 
-<h2>0</h2>
+<h3>0</h3>
 
-<p>Total Societies</p>
+<p>Societies</p>
+
+</div>
+
+<div class="icon">
+
+<i class="fas fa-building"></i>
 
 </div>
 
@@ -77,15 +66,21 @@ Logout
 
 </div>
 
-<div class="col-md-3">
+<div class="col-lg-3 col-6">
 
-<div class="card shadow-sm">
+<div class="small-box bg-success">
 
-<div class="card-body text-center">
+<div class="inner">
 
-<h2>0</h2>
+<h3>0</h3>
 
-<p>Total Residents</p>
+<p>Residents</p>
+
+</div>
+
+<div class="icon">
+
+<i class="fas fa-users"></i>
 
 </div>
 
@@ -93,15 +88,21 @@ Logout
 
 </div>
 
-<div class="col-md-3">
+<div class="col-lg-3 col-6">
 
-<div class="card shadow-sm">
+<div class="small-box bg-warning">
 
-<div class="card-body text-center">
+<div class="inner">
 
-<h2>₹0</h2>
+<h3>₹0</h3>
 
-<p>Total Revenue</p>
+<p>Revenue</p>
+
+</div>
+
+<div class="icon">
+
+<i class="fas fa-wallet"></i>
 
 </div>
 
@@ -109,18 +110,94 @@ Logout
 
 </div>
 
-<div class="col-md-3">
+<div class="col-lg-3 col-6">
 
-<div class="card shadow-sm">
+<div class="small-box bg-danger">
 
-<div class="card-body text-center">
+<div class="inner">
 
-<h2>0</h2>
+<h3>0</h3>
 
 <p>Premium Plans</p>
 
 </div>
 
+<div class="icon">
+
+<i class="fas fa-crown"></i>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="col-lg-8">
+
+<div class="card">
+
+<div class="card-header">
+
+<h3 class="card-title">
+
+Recent Activities
+
+</h3>
+
+</div>
+
+<div class="card-body">
+
+<p class="text-muted">
+
+No recent activities found.
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-lg-4">
+
+<div class="card">
+
+<div class="card-header">
+
+<h3 class="card-title">
+
+Quick Actions
+
+</h3>
+
+</div>
+
+<div class="card-body d-grid gap-2">
+
+<button class="btn btn-primary">
+
+Add Society
+
+</button>
+
+<button class="btn btn-success">
+
+Create Subscription
+
+</button>
+
+<button class="btn btn-warning">
+
+Generate Report
+
+</button>
+
 </div>
 
 </div>
@@ -129,6 +206,14 @@ Logout
 
 </div>
 
-</body>
+</div>
 
-</html>
+</section>
+
+</div>
+
+<?php
+
+require_once "../layouts/footer.php";
+
+?>
