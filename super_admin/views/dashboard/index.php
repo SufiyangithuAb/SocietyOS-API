@@ -8,10 +8,6 @@ require_once "../../controllers/DashboardController.php";
 $dashboard = new DashboardController();
 
 $stats = $dashboard->index();
-
-echo "<pre>";
-print_r($stats);
-echo "</pre>";
 ?>
 
 <div class="content-wrapper">
@@ -58,7 +54,7 @@ Welcome back,
 
 <div class="inner">
 
-<h3>0</h3>
+<h3><?= $stats['societies']; ?></h3>
 
 <p>Societies</p>
 
@@ -80,7 +76,7 @@ Welcome back,
 
 <div class="inner">
 
-<h3>0</h3>
+<h3><?= $stats['residents']; ?></h3>
 
 <p>Residents</p>
 
@@ -102,7 +98,7 @@ Welcome back,
 
 <div class="inner">
 
-<h3>₹0</h3>
+<h3>₹<?= number_format($stats['revenue']); ?></h3>
 
 <p>Revenue</p>
 
@@ -124,7 +120,7 @@ Welcome back,
 
 <div class="inner">
 
-<h3>0</h3>
+<h3><?= $stats['subscriptions']; ?></h3>
 
 <p>Premium Plans</p>
 
