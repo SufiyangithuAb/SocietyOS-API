@@ -41,7 +41,7 @@ Dashboard
 <li class="nav-item">
 
 <a
-href="#"
+href="<?= BASE_URL ?>views/societies/index.php"
 class="nav-link">
 
 <i class="nav-icon fas fa-building"></i>
