@@ -4,21 +4,19 @@
 
 :80 {
 
-    # API
-    handle /api/* {
+    # ---------- API ----------
+    handle_path /api/* {
         root * /app/api/public
-        rewrite * /index.php?{query}
         php_server
     }
 
-    # Super Admin
-    handle /super_admin/* {
+    # ---------- SUPER ADMIN ----------
+    handle_path /super_admin/* {
         root * /app/super_admin
         php_server
     }
 
-    # Optional home page
     handle {
-        respond "SocietyOS Server Running" 200
+        respond "SocietyOS Running"
     }
 }
