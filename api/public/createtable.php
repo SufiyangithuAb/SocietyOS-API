@@ -8,20 +8,25 @@ try {
     $database = new Database();
     $db = $database->connect();
 
-    $sql = "
-    INSERT INTO plans
-(name, amount, duration_days, description)
-VALUES
-('BASIC', 999, 365, 'Basic Society Plan'),
+    $sql = "CREATE TABLE super_admins (
 
-('PREMIUM', 1999, 365, 'Premium Society Plan'),
+    id INT AUTO_INCREMENT PRIMARY KEY,
 
-('ENTERPRISE', 4999, 365, 'Enterprise Society Plan');
-    ";
+    name VARCHAR(100) NOT NULL,
+
+    email VARCHAR(150) UNIQUE NOT NULL,
+
+    password VARCHAR(255) NOT NULL,
+
+    status ENUM('ACTIVE','BLOCKED') DEFAULT 'ACTIVE',
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+);";
 
     $db->exec($sql);
 
-    echo "Payments table created successfully.";
+    echo "table created successfully.";
 
 } catch (PDOException $e) {
 
