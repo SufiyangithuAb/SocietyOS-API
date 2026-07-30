@@ -1,0 +1,24 @@
+{
+    auto_https off
+}
+
+:80 {
+
+    # API
+    handle /api/* {
+        root * /app/api/public
+        rewrite * /index.php?{query}
+        php_server
+    }
+
+    # Super Admin
+    handle /super_admin/* {
+        root * /app/super_admin
+        php_server
+    }
+
+    # Optional home page
+    handle {
+        respond "SocietyOS Server Running" 200
+    }
+}
