@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__ . "/../helpers/response.php";
-
 class Database
 {
     private $conn;
