@@ -4,19 +4,13 @@
 
 :80 {
 
-    # ---------- API ----------
-    handle_path /api/* {
-        root * /app/api/public
-        php_server
-    }
-
-    # ---------- SUPER ADMIN ----------
+    # Super Admin
     handle_path /super_admin/* {
         root * /app/super_admin
         php_server
     }
 
-    handle {
-        respond "SocietyOS Running"
-    }
+    # Everything else goes to the existing API
+    root * /app/api/public
+    php_server
 }
