@@ -8,20 +8,17 @@ try {
     $database = new Database();
     $db = $database->connect();
 
-    $sql = "CREATE TABLE super_admins (
-
-    id INT AUTO_INCREMENT PRIMARY KEY,
-
-    name VARCHAR(100) NOT NULL,
-
-    email VARCHAR(150) UNIQUE NOT NULL,
-
-    password VARCHAR(255) NOT NULL,
-
-    status ENUM('ACTIVE','BLOCKED') DEFAULT 'ACTIVE',
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-
+    $sql = "INSERT INTO super_admins
+(
+name,
+email,
+password
+)
+VALUES
+(
+'Sufiyan',
+'admin@societyos.in',
+'PASTE_HASH_HERE'
 );";
 
     $db->exec($sql);
