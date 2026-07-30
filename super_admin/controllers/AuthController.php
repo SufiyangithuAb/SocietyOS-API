@@ -1,6 +1,6 @@
 <?php
 
-require_once "../models/Admin.php";
+require_once "./models/Admin.php";
 
 class AuthController
 {
@@ -53,7 +53,7 @@ class AuthController
 
         $_SESSION["super_admin"] = $user;
 
-        header("Location: views/dashboard/index.php");
+        header("Location: index.php");
         exit;
     }
 }

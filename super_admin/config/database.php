@@ -2,7 +2,12 @@
 
 class Database
 {
-    private $conn;
+    private $host = "mysql.railway.internal";
+    private $db_name = "railway";
+    private $username = "root";
+    private $password = "KInyvkFHRxEzXDzBEmQbDXoRvyyNitaz";
+
+    public $conn;
 
     public function connect()
     {
@@ -10,18 +15,10 @@ class Database
 
         try {
 
-            $host = "mysql.railway.internal";
-            $port = "3306";
-            $db   = "railway";
-            $user = "root";
-            $pass = "KInyvkFHRxEzXDzBEmQbDXoRvyyNitaz";
-
-            $dsn = "mysql:host={$host};port={$port};dbname={$db};charset=utf8mb4";
-
             $this->conn = new PDO(
-                $dsn,
-                $user,
-                $pass
+                "mysql:host={$this->host};dbname={$this->db_name};charset=utf8mb4",
+                $this->username,
+                $this->password
             );
 
             $this->conn->setAttribute(
@@ -29,20 +26,9 @@ class Database
                 PDO::ERRMODE_EXCEPTION
             );
 
-            $this->conn->setAttribute(
-                PDO::ATTR_DEFAULT_FETCH_MODE,
-                PDO::FETCH_ASSOC
-            );
-
         } catch (PDOException $e) {
 
-            response(
-                false,
-                "Database Connection Failed",
-                [
-                    "error" => $e->getMessage()
-                ]
-            );
+            die($e->getMessage());
 
         }
 
