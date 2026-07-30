@@ -8,6 +8,10 @@ require_once "../../controllers/DashboardController.php";
 $dashboard = new DashboardController();
 
 $stats = $dashboard->index();
+
+echo "<pre>";
+print_r($stats);
+echo "</pre>";
 ?>
 
 <div class="content-wrapper">
