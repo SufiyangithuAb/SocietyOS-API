@@ -3,7 +3,11 @@
 require_once "../layouts/header.php";
 require_once "../layouts/navbar.php";
 require_once "../layouts/sidebar.php";
+require_once "../../controllers/DashboardController.php";
 
+$dashboard = new DashboardController();
+
+$stats = $dashboard->index();
 ?>
 
 <div class="content-wrapper">
