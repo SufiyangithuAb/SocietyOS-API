@@ -11,22 +11,23 @@ class Society
 
     public function getAll()
     {
-        $stmt = $this->db->query("
-            SELECT
-                s.id,
-                s.name,
-                s.city,
-                s.total_flats,
-                p.name AS plan_name,
-                u.name AS admin_name
-            FROM societies s
-            LEFT JOIN plans p
-                ON s.plan_id = p.id
-            LEFT JOIN users u
-                ON s.admin_user_id = u.id
-            ORDER BY s.id DESC
-        ");
+        $sql = "
+        SELECT
+            s.id,
+            s.name,
+            s.city,
+            s.total_flats,
+            sub.plan_name,
+            sub.status
+        FROM societies s
 
-        return $stmt->fetchAll();
+        LEFT JOIN subscriptions sub
+            ON sub.society_id = s.id
+            AND sub.status='ACTIVE'
+
+        ORDER BY s.id DESC
+        ";
+
+        return $this->db->query($sql)->fetchAll();
     }
 }

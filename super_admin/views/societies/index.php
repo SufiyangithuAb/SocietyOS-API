@@ -3,7 +3,11 @@
 require_once "../layouts/header.php";
 require_once "../layouts/navbar.php";
 require_once "../layouts/sidebar.php";
+require_once "../../controllers/SocietyController.php";
 
+$controller = new SocietyController();
+
+$societies = $controller->index();
 ?>
 
 <div class="content-wrapper">
@@ -97,15 +101,49 @@ Action
 
 <tbody>
 
+<?php if(empty($societies)): ?>
+
 <tr>
 
 <td colspan="6" class="text-center">
 
-No societies found.
+No societies found
 
 </td>
 
 </tr>
+
+<?php else: ?>
+
+<?php foreach($societies as $society): ?>
+
+<tr>
+
+<td><?= $society['id']; ?></td>
+
+<td><?= htmlspecialchars($society['name']); ?></td>
+
+<td><?= htmlspecialchars($society['city']); ?></td>
+
+<td><?= htmlspecialchars($society['plan_name'] ?? '-'); ?></td>
+
+<td><?= htmlspecialchars($society['status'] ?? '-'); ?></td>
+
+<td>
+
+<button class="btn btn-sm btn-primary">
+
+View
+
+</button>
+
+</td>
+
+</tr>
+
+<?php endforeach; ?>
+
+<?php endif; ?>
 
 </tbody>
 
