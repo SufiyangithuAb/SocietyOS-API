@@ -53,6 +53,55 @@ $residents = $controller->index();
 
 </thead>
 
+<div class="card-header">
+
+<form method="GET" class="row">
+
+    <div class="col-md-4">
+        <input
+            type="text"
+            name="search"
+            class="form-control"
+            placeholder="Search Name, Email or Phone"
+            value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
+    </div>
+
+    <div class="col-md-3">
+
+        <select name="status" class="form-select">
+
+            <option value="">All Status</option>
+
+            <option value="ACTIVE"
+                <?= (($_GET['status'] ?? '') == 'ACTIVE') ? 'selected' : '' ?>>
+                Active
+            </option>
+
+            <option value="INACTIVE"
+                <?= (($_GET['status'] ?? '') == 'INACTIVE') ? 'selected' : '' ?>>
+                Inactive
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="col-md-2">
+
+        <button class="btn btn-primary w-100">
+
+            <i class="fas fa-search"></i>
+
+            Search
+
+        </button>
+
+    </div>
+
+</form>
+
+</div>
+
 <tbody>
 
 <?php if(empty($residents)): ?>
@@ -85,33 +134,45 @@ No residents found
 
 <td>
 
-<?php if($resident['status']=='ACTIVE'): ?>
+<?php
 
-<span class="badge bg-success">
+$status = strtoupper($resident['status']);
 
-Active
+if ($status == 'ACTIVE') {
 
-</span>
+    echo '<span class="badge bg-success">Active</span>';
 
-<?php else: ?>
+} else {
 
-<span class="badge bg-danger">
+    echo '<span class="badge bg-danger">Inactive</span>';
 
-Inactive
+}
 
-</span>
-
-<?php endif; ?>
+?>
 
 </td>
 
 <td>
 
-<button class="btn btn-primary btn-sm">
+<a href="#" class="btn btn-info btn-sm">
 
-View
+<i class="fas fa-eye"></i>
 
-</button>
+</a>
+
+<a href="#" class="btn btn-warning btn-sm">
+
+<i class="fas fa-edit"></i>
+
+</a>
+
+<a href="#"
+class="btn btn-danger btn-sm"
+onclick="return confirm('Delete this resident?')">
+
+<i class="fas fa-trash"></i>
+
+</a>
 
 </td>
 
