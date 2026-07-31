@@ -92,6 +92,16 @@ Societies
 
 </li>
 
+<li class="nav-item"> /ul>
+
+
+<a href="<?= BASE_URL ?>views/notices/index.php" class="nav-link">
+    <i class="nav-icon fas fa-bullhorn"></i>
+    <p>Notices</p>
+</a>
+
+</li>
+
 <li class="nav-item">
 
 <a
