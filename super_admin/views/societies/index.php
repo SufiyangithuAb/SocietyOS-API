@@ -42,32 +42,47 @@ Add Society
 
 <div class="card-header">
 
-<div class="row">
+<form method="GET" class="row">
 
-<div class="col-md-4">
+    <div class="col-md-4">
+        <input
+            type="text"
+            name="search"
+            class="form-control"
+            placeholder="Search Society..."
+            value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
+    </div>
 
-<input
-type="text"
-class="form-control"
-placeholder="Search Society">
+    <div class="col-md-3">
+        <select name="status" class="form-select">
 
-</div>
+            <option value="">All Status</option>
 
-<div class="col-md-3">
+            <option value="ACTIVE"
+                <?= (($_GET['status'] ?? '') == 'ACTIVE') ? 'selected' : '' ?>>
+                Active
+            </option>
 
-<select class="form-select">
+            <option value="EXPIRED"
+                <?= (($_GET['status'] ?? '') == 'EXPIRED') ? 'selected' : '' ?>>
+                Expired
+            </option>
 
-<option>All Status</option>
+            <option value="CANCELLED"
+                <?= (($_GET['status'] ?? '') == 'CANCELLED') ? 'selected' : '' ?>>
+                Cancelled
+            </option>
 
-<option>Active</option>
+        </select>
+    </div>
 
-<option>Inactive</option>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">
+            <i class="fas fa-search"></i> Search
+        </button>
+    </div>
 
-</select>
-
-</div>
-
-</div>
+</form>
 
 </div>
 

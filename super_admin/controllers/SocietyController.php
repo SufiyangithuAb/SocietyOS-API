@@ -15,6 +15,9 @@ class SocietyController
 
     public function index()
     {
-        return $this->society->getAll();
+        $search = trim($_GET['search'] ?? '');
+        $status = trim($_GET['status'] ?? '');
+
+        return $this->society->getAll($search, $status);
     }
 }

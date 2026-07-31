@@ -9,25 +9,45 @@ class Society
         $this->db = $db;
     }
 
-    public function getAll()
+    public function getAll($search = '', $status = '')
     {
         $sql = "
-        SELECT
-            s.id,
-            s.name,
-            s.city,
-            s.total_flats,
-            sub.plan_name,
-            sub.status
-        FROM societies s
+            SELECT
+                s.id,
+                s.name,
+                s.city,
+                s.total_flats,
+                sub.plan_name,
+                sub.status
+            FROM societies s
 
-        LEFT JOIN subscriptions sub
-            ON sub.society_id = s.id
-            AND sub.status='ACTIVE'
-
-        ORDER BY s.id DESC
+            LEFT JOIN subscriptions sub
+                ON sub.society_id = s.id
         ";
 
-        return $this->db->query($sql)->fetchAll();
+        $conditions = [];
+        $params = [];
+
+        if (!empty($search)) {
+            $conditions[] = "(s.name LIKE ? OR s.city LIKE ?)";
+            $params[] = "%{$search}%";
+            $params[] = "%{$search}%";
+        }
+
+        if (!empty($status)) {
+            $conditions[] = "sub.status = ?";
+            $params[] = $status;
+        }
+
+        if (!empty($conditions)) {
+            $sql .= " WHERE " . implode(" AND ", $conditions);
+        }
+
+        $sql .= " ORDER BY s.id DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
