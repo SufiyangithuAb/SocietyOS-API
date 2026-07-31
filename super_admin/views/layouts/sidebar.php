@@ -76,6 +76,15 @@ Societies
 
 <li class="nav-item">
 
+<a href="<?= BASE_URL ?>views/payments/index.php" class="nav-link">
+    <i class="nav-icon fas fa-wallet"></i>
+    <p>Payments</p>
+</a>
+
+</li>
+
+<li class="nav-item">
+
 <a
 href="#"
 class="nav-link">
