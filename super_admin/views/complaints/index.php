@@ -156,7 +156,7 @@ No complaints found.
 
 <td><?= htmlspecialchars($complaint['society_name']); ?></td>
 
-<td><?= htmlspecialchars($complaint['resident_name']); ?></td>
+<?= htmlspecialchars($complaint['resident_name'] ?: 'N/A'); ?>
 
 <td><?= htmlspecialchars($complaint['title']); ?></td>
 
