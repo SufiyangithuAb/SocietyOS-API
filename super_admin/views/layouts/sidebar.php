@@ -58,18 +58,9 @@ Societies
 
 <li class="nav-item">
 
-<a
-href="#"
-class="nav-link">
-
-<i class="nav-icon fas fa-users"></i>
-
-<p>
-
-Residents
-
-</p>
-
+<a href="<?= BASE_URL ?>views/residents/index.php" class="nav-link">
+    <i class="nav-icon fas fa-users"></i>
+    <p>Residents</p>
 </a>
 
 </li>
