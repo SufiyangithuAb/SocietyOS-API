@@ -85,6 +85,15 @@ Societies
 
 <li class="nav-item">
 
+<a href="<?= BASE_URL ?>views/complaints/index.php" class="nav-link">
+    <i class="nav-icon fas fa-exclamation-circle"></i>
+    <p>Complaints</p>
+</a>
+
+</li>
+
+<li class="nav-item">
+
 <a
 href="#"
 class="nav-link">
