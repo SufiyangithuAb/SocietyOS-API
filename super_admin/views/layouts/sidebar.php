@@ -67,18 +67,9 @@ Societies
 
 <li class="nav-item">
 
-<a
-href="#"
-class="nav-link">
-
-<i class="nav-icon fas fa-money-bill-wave"></i>
-
-<p>
-
-Subscriptions
-
-</p>
-
+<a href="<?= BASE_URL ?>views/subscriptions/index.php" class="nav-link">
+    <i class="nav-icon fas fa-credit-card"></i>
+    <p>Subscriptions</p>
 </a>
 
 </li>
