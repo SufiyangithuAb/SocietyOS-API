@@ -117,17 +117,29 @@ class BackupController
 
     private function cleanupOldBackups()
     {
-        $days = $this->db
-            ->query("SELECT retention_days FROM backup_settings LIMIT 1")
-            ->fetchColumn();
+        try {
+
+            $days = $this->db
+                ->query("SELECT retention_days FROM backup_settings LIMIT 1")
+                ->fetchColumn();
+
+            if (!$days) {
+                $days = 90;
+            }
+
+        } catch (Exception $e) {
+
+            $days = 90;
+
+        }
 
         $folder = __DIR__ . "/../storage/backups/";
 
         $files = glob($folder . "*.sql");
 
-        foreach($files as $file){
+        foreach ($files as $file) {
 
-            if(filemtime($file) < strtotime("-{$days} days")){
+            if (filemtime($file) < strtotime("-{$days} days")) {
 
                 unlink($file);
 
