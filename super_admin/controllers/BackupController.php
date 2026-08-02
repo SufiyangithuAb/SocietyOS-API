@@ -70,6 +70,9 @@ class BackupController
 
         file_put_contents($folder . $file, $sql);
 
-        return $file;
+        return [
+            'name' => $file,
+            'path' => $folder . $file
+        ];
     }
 }

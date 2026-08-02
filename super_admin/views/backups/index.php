@@ -12,9 +12,12 @@ $message = "";
 
 if(isset($_POST['backup']))
 {
-    $file = $controller->createBackup();
+    $backup = $controller->createBackup();
 
-    $message = "Backup Created : ".$file;
+    $message = "Backup Created Successfully";
+
+    $_SESSION['backup_file'] = $backup['path'];
+    $_SESSION['backup_name'] = $backup['name'];
 }
 
 ?>
@@ -42,6 +45,20 @@ if(isset($_POST['backup']))
 <?= $message ?>
 
 </div>
+
+<?php if(isset($_SESSION['backup_file'])): ?>
+
+<a
+href="download.php"
+class="btn btn-primary mt-3">
+
+<i class="fas fa-download"></i>
+
+Download Backup
+
+</a>
+
+<?php endif; ?>
 
 <?php endif; ?>
 
