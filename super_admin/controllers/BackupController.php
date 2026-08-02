@@ -120,36 +120,52 @@ class BackupController
         try {
 
             $days = $this->db
-                ->query("SELECT retention_days FROM backup_settings LIMIT 1")
+                ->query("SELECT retention_days FROM backup_settings WHERE id = 1")
                 ->fetchColumn();
 
-            if (!$days) {
+            $days = (int)$days;
+
+            if ($days <= 0) {
                 $days = 90;
             }
 
         } catch (Exception $e) {
 
             $days = 90;
-
         }
 
         $folder = __DIR__ . "/../storage/backups/";
 
+        if (!is_dir($folder)) {
+            return;
+        }
+
         $files = glob($folder . "*.sql");
+
+        if ($files === false) {
+            return;
+        }
+
+        $cutoff = time() - ($days * 86400);
 
         foreach ($files as $file) {
 
-            if (filemtime($file) < strtotime("-{$days} days")) {
+            if (
+                is_file($file) &&
+                filemtime($file) < $cutoff
+            ) {
 
-                unlink($file);
+                $fileName = basename($file);
 
-                $stmt = $this->db->prepare(
-                    "DELETE FROM backup_history WHERE file_name=?"
-                );
+                if (unlink($file)) {
 
-                $stmt->execute([
-                    basename($file)
-                ]);
+                    $stmt = $this->db->prepare("
+                        DELETE FROM backup_history
+                        WHERE file_name = ?
+                    ");
+
+                    $stmt->execute([$fileName]);
+                }
             }
         }
     }
