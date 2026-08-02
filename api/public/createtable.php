@@ -8,22 +8,31 @@ try {
     $database = new Database();
     $db = $database->connect();
 
-    $sql = "CREATE TABLE backup_history (
+    $sql = "CREATE TABLE backup_settings (
 
-id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT PRIMARY KEY,
 
-file_name VARCHAR(255),
+    retention_days INT DEFAULT 90,
 
-file_size BIGINT,
+    auto_backup TINYINT(1) DEFAULT 1,
 
-storage ENUM('SERVER','GOOGLE_DRIVE','BOTH'),
+    google_drive_sync TINYINT(1) DEFAULT 0,
 
-status ENUM('SUCCESS','FAILED'),
+    compress_backup TINYINT(1) DEFAULT 1,
 
-created_by INT,
+    backup_time TIME DEFAULT '02:00:00'
 
-created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
+INSERT INTO backup_settings
+VALUES
+(
+1,
+90,
+1,
+0,
+1,
+'02:00:00'
 );";
 
     $db->exec($sql);

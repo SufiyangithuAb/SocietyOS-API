@@ -70,14 +70,75 @@ class BackupController
 
         file_put_contents($folder . $file, $sql);
 
+        $fullPath = $folder . $file;
+
+        $fileSize = filesize($fullPath);
+
+        $fileHash = hash_file('sha256', $fullPath);
+
+        $stmt = $this->db->prepare("
+        INSERT INTO backup_history
+        (
+        file_name,
+        file_size,
+        backup_hash,
+        storage_type,
+        status
+        )
+
+        VALUES
+        (
+        ?,
+        ?,
+        ?,
+        'SERVER',
+        'SUCCESS'
+        )
+        ");
+
+        $stmt->execute([
+            $file,
+            $fileSize,
+            $fileHash
+        ]);
+
         return [
             'name' => $file,
             'path' => $folder . $file
         ];
+
+        $this->cleanupOldBackups();
     }
 
     public function getBackups()
     {
         return $this->backup->getBackups();
+    }
+
+    private function cleanupOldBackups()
+    {
+        $days = $this->db
+            ->query("SELECT retention_days FROM backup_settings LIMIT 1")
+            ->fetchColumn();
+
+        $folder = __DIR__ . "/../storage/backups/";
+
+        $files = glob($folder . "*.sql");
+
+        foreach($files as $file){
+
+            if(filemtime($file) < strtotime("-{$days} days")){
+
+                unlink($file);
+
+                $stmt = $this->db->prepare(
+                    "DELETE FROM backup_history WHERE file_name=?"
+                );
+
+                $stmt->execute([
+                    basename($file)
+                ]);
+            }
+        }
     }
 }
