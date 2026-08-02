@@ -102,12 +102,12 @@ class BackupController
             $fileHash
         ]);
 
+        $this->cleanupOldBackups();
+
         return [
             'name' => $file,
             'path' => $folder . $file
         ];
-
-        $this->cleanupOldBackups();
     }
 
     public function getBackups()

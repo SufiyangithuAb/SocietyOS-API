@@ -30,36 +30,12 @@ class Backup
 
     public function getBackups()
     {
-        $folder = __DIR__ . "/../storage/backups/";
+        $stmt = $this->db->query("
+            SELECT *
+            FROM backup_history
+            ORDER BY created_at DESC
+        ");
 
-        if (!is_dir($folder)) {
-            return [];
-        }
-
-        $files = glob($folder . "*.sql");
-
-        $backups = [];
-
-        foreach ($files as $file) {
-
-            $backups[] = [
-
-                'name' => basename($file),
-
-                'size' => filesize($file),
-
-                'date' => filemtime($file)
-
-            ];
-
-        }
-
-        usort($backups, function ($a, $b) {
-
-            return $b['date'] - $a['date'];
-
-        });
-
-        return $backups;
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

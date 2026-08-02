@@ -112,11 +112,11 @@ Create Backup
 
 <tr>
 
-<td><?= htmlspecialchars($backup['name']) ?></td>
+<td><?= htmlspecialchars($backup['file_name']) ?></td>
 
-<td><?= round($backup['size']/1024,2) ?> KB</td>
+<td><?= round($backup['file_size']/1024,2) ?> KB</td>
 
-<td><?= date("d M Y H:i",$backup['date']) ?></td>
+<td><?= date("d M Y H:i", strtotime($backup['created_at'])) ?></td>
 
 </tr>
 
