@@ -10,6 +10,8 @@ $controller = new BackupController();
 
 $message = "";
 
+$backups = $controller->getBackups();
+
 if(isset($_POST['backup']))
 {
     $backup = $controller->createBackup();
@@ -77,6 +79,56 @@ class="btn btn-success">
 Create Backup
 
 </button>
+
+<div class="card mt-4">
+
+<div class="card-header">
+
+<h5>Backup History</h5>
+
+</div>
+
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<thead>
+
+<tr>
+
+<th>File</th>
+
+<th>Size</th>
+
+<th>Date</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<?php foreach($backups as $backup): ?>
+
+<tr>
+
+<td><?= htmlspecialchars($backup['name']) ?></td>
+
+<td><?= round($backup['size']/1024,2) ?> KB</td>
+
+<td><?= date("d M Y H:i",$backup['date']) ?></td>
+
+</tr>
+
+<?php endforeach; ?>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
 
 </form>
 

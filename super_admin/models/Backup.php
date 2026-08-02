@@ -27,4 +27,39 @@ class Backup
             ->query("SELECT * FROM `$table`")
             ->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getBackups()
+    {
+        $folder = __DIR__ . "/../storage/backups/";
+
+        if (!is_dir($folder)) {
+            return [];
+        }
+
+        $files = glob($folder . "*.sql");
+
+        $backups = [];
+
+        foreach ($files as $file) {
+
+            $backups[] = [
+
+                'name' => basename($file),
+
+                'size' => filesize($file),
+
+                'date' => filemtime($file)
+
+            ];
+
+        }
+
+        usort($backups, function ($a, $b) {
+
+            return $b['date'] - $a['date'];
+
+        });
+
+        return $backups;
+    }
 }

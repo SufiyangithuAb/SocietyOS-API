@@ -75,4 +75,9 @@ class BackupController
             'path' => $folder . $file
         ];
     }
+
+    public function getBackups()
+    {
+        return $this->backup->getBackups();
+    }
 }
