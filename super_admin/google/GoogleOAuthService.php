@@ -21,7 +21,8 @@ class GoogleOAuthService
         $this->client->setRedirectUri($config['redirect_uri']);
 
         $this->client->setScopes([
-            Google\Service\Drive::DRIVE
+            Google\Service\Drive::DRIVE,
+            "https://www.googleapis.com/auth/userinfo.email"
         ]);
 
         // Required to obtain a refresh token
