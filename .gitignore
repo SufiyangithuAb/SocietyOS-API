@@ -26,3 +26,7 @@ uploads/*
 # Temporary
 tmp/
 cache/
+
+# Google Service Account
+super_admin/storage/credentials/
+*.json
