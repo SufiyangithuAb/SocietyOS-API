@@ -17,20 +17,54 @@ try {
     $token = $google->fetchAccessToken($_GET['code']);
 
     if (isset($token['error'])) {
+    die($token['error']);
+}
 
-        die($token['error']);
+$client = $google->getClient();
 
-    }
+$client->setAccessToken($token);
 
-    $_SESSION['google_token'] = $token;
+$oauth = new Google\Service\Oauth2($client);
 
-    echo "<h2>✅ Google Drive Connected Successfully</h2>";
+$user = $oauth->userinfo->get();
 
-    echo "<pre>";
+$email = $user->email;
 
-    print_r($token);
+require_once __DIR__ . "/../config/database.php";
 
-    echo "</pre>";
+$db = (new Database())->connect();
+
+/*
+Remove previous token
+*/
+
+$db->exec("DELETE FROM google_tokens");
+
+$stmt = $db->prepare("
+INSERT INTO google_tokens
+(
+email,
+refresh_token
+)
+VALUES
+(
+?,
+?
+)
+");
+
+if (!isset($token['refresh_token'])) {
+    die("Refresh token not received. Please revoke the app from your Google Account and authorize again.");
+}
+
+$stmt->execute([
+    $email,
+    $token['refresh_token']
+]);
+
+echo "<h2>Google Drive Connected Successfully ✅</h2>";
+
+echo "Connected Account : <b>{$email}</b>";
 
 } catch (Exception $e) {
 

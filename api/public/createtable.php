@@ -16,9 +16,15 @@ try {
 
     refresh_token TEXT NOT NULL,
 
+    access_token TEXT NULL,
+
+    expires_at DATETIME NULL,
+
     connected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    last_used TIMESTAMP NULL
+    last_used TIMESTAMP NULL,
+
+    status ENUM('CONNECTED','DISCONNECTED') DEFAULT 'CONNECTED'
 
 );";
 
