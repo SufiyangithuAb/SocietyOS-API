@@ -24,6 +24,11 @@ $client = $google->getClient();
 
 $client->setAccessToken($token);
 
+echo "<pre>";
+print_r($client->getAccessToken());
+echo "</pre>";
+exit;
+
 $oauth = new Google\Service\Oauth2($client);
 
 $user = $oauth->userinfo->get();
