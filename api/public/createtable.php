@@ -8,37 +8,18 @@ try {
     $database = new Database();
     $db = $database->connect();
 
-    $sql = "CREATE TABLE backup_settings (
+    $sql = "CREATE TABLE google_tokens (
 
-    id INT PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
 
-    retention_days INT NOT NULL DEFAULT 90,
+    email VARCHAR(255) NOT NULL,
 
-    auto_backup TINYINT(1) DEFAULT 1,
+    refresh_token TEXT NOT NULL,
 
-    google_drive_sync TINYINT(1) DEFAULT 0,
+    connected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    compress_backup TINYINT(1) DEFAULT 1,
+    last_used TIMESTAMP NULL
 
-    backup_time TIME DEFAULT '02:00:00'
-
-); INSERT INTO backup_settings
-(
-    id,
-    retention_days,
-    auto_backup,
-    google_drive_sync,
-    compress_backup,
-    backup_time
-)
-VALUES
-(
-    1,
-    90,
-    1,
-    0,
-    1,
-    '02:00:00'
 );";
 
     $db->exec($sql);
