@@ -1,0 +1,17 @@
+{
+    "name": "sufiy/super_admin",
+    "autoload": {
+        "psr-4": {
+            "Sufiy\\SuperAdmin\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Sufiyan Shaikh",
+            "email": "sufiyanshaikh7698@gmail.com"
+        }
+    ],
+    "require": {
+        "google/apiclient": "^2.19"
+    }
+}
