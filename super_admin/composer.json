@@ -12,6 +12,8 @@
         }
     ],
     "require": {
-        "google/apiclient": "^2.19"
+        "google/apiclient": "^2.19",
+        "google/auth": "^1.53",
+        "psr/cache": "^3.0"
     }
 }

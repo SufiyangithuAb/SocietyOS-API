@@ -3,7 +3,7 @@
         'name' => 'sufiy/super_admin',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '77c2e6305a643787a284c5771a97d221b779123d',
+        'reference' => '65106f1a4492842e037718b720c09bd86ed51809',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -163,7 +163,7 @@
         'sufiy/super_admin' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '77c2e6305a643787a284c5771a97d221b779123d',
+            'reference' => '65106f1a4492842e037718b720c09bd86ed51809',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
