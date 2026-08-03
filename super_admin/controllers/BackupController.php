@@ -72,6 +72,15 @@ class BackupController
 
         $fullPath = $folder . $file;
 
+        require_once __DIR__ . "/../services/GoogleDriveService.php";
+
+        $drive = new GoogleDriveService();
+
+        $driveFileId = $drive->upload(
+            $fullPath,
+            $file
+        );
+
         $fileSize = filesize($fullPath);
 
         $fileHash = hash_file('sha256', $fullPath);
@@ -82,16 +91,17 @@ class BackupController
         file_name,
         file_size,
         backup_hash,
+        drive_file_id,
         storage_type,
         status
         )
-
         VALUES
         (
         ?,
         ?,
         ?,
-        'BOTH',
+        ?,
+        'GOOGLE_DRIVE',
         'SUCCESS'
         )
         ");
@@ -100,6 +110,7 @@ class BackupController
             $file,
             $fileSize,
             $fileHash,
+            $driveFileId
         ]);
 
         $this->cleanupOldBackups();
