@@ -14,12 +14,20 @@ class GoogleDriveService
         $this->client->setApplicationName("SocietyOS Backup");
 
         $this->client->setScopes([
-            Google\Service\Drive::DRIVE_FILE
+            Google\Service\Drive::DRIVE
         ]);
 
-        $this->client->setAuthConfig(
-            __DIR__ . "/../storage/credentials/google-drive.json"
-        );
+        $credentials = getenv('GOOGLE_DRIVE_CREDENTIALS');
+
+        if (!$credentials) {
+            throw new Exception("GOOGLE_DRIVE_CREDENTIALS environment variable not found.");
+        }
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'gdrive_');
+
+        file_put_contents($tempFile, $credentials);
+
+        $this->client->setAuthConfig($tempFile);
 
         $this->drive = new Google\Service\Drive($this->client);
     }
