@@ -31,8 +31,7 @@ class ComplaintController
             true
         );
 
-        if(empty($data['title']))
-        {
+        if (empty($data['title'])) {
             response(false, "Title is required");
         }
 
@@ -43,8 +42,61 @@ class ComplaintController
             $data['category'] ?? 'OTHER'
         );
 
-        if($result)
-        {
+        if ($result) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Notify Society Admins
+            |--------------------------------------------------------------------------
+            */
+
+            try {
+
+                $notificationTitle =
+                    "📢 New Complaint";
+
+                $notificationBody =
+                    "A resident has submitted a new complaint: \"" .
+                    ($data['title'] ?? 'Complaint') .
+                    "\".";
+
+                $notificationResult =
+                    $this->notification->notifyAdmins(
+                        $user['society_id'],
+                        $notificationTitle,
+                        $notificationBody,
+                        [
+                            "type" =>
+                                "NEW_COMPLAINT",
+
+                            "screen" =>
+                                "COMPLAINTS",
+
+                            "complaint_id" =>
+                                (string) $result
+                        ]
+                    );
+
+                error_log(
+                    "NEW COMPLAINT NOTIFICATION: " .
+                    json_encode($notificationResult)
+                );
+
+            } catch (Throwable $e) {
+
+                /*
+                |--------------------------------------------------------------------------
+                | Complaint is already created.
+                | Notification failure must NOT fail complaint creation.
+                |--------------------------------------------------------------------------
+                */
+
+                error_log(
+                    "NEW COMPLAINT FCM ERROR: " .
+                    $e->getMessage()
+                );
+            }
+
             response(
                 true,
                 "Complaint created successfully"
