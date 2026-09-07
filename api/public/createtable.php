@@ -4,11 +4,16 @@ require_once "../config/database.php";
 
 try {
 
-
     $database = new Database();
     $db = $database->connect();
 
-    $sql = "-- SocietyOS Database Backup
+    $db->exec("SET FOREIGN_KEY_CHECKS = 0;");
+
+    $sql = <<<'SQL'
+
+    /* KEEP ALL YOUR CURRENT SQL HERE */
+
+    -- SocietyOS Database Backup
 -- Generated : 2026-08-02 20:05:11
 
 
@@ -400,14 +405,24 @@ INSERT INTO `users` (`id`,`society_id`,`name`,`email`,`phone`,`password`,`role`,
 INSERT INTO `users` (`id`,`society_id`,`name`,`email`,`phone`,`password`,`role`,`profile_image`,`is_active`,`created_at`,`api_token`,`status`) VALUES ('30','10','tsetest','tst','8989898989','$2y$10$PBh3iwz.L8RTbKz.Vx0gUOLX4dOizK0GVmMnH7fQPrm0jTqZhbbtG','RESIDENT',NULL,'1','2026-07-30 22:25:31',NULL,'ACTIVE');
 
 
-";
+
+
+SQL;
 
     $db->exec($sql);
 
-    echo "table created successfully.";
+    $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
+
+    echo "Tables created successfully.";
 
 } catch (PDOException $e) {
 
-    die($e->getMessage());
+    try {
+        if (isset($db)) {
+            $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
+        }
+    } catch (Exception $ignored) {
+    }
 
+    die($e->getMessage());
 }
