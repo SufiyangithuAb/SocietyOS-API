@@ -5,7 +5,7 @@ class Database
     private $host = "mysql.railway.internal";
     private $db = "railway";
     private $user = "root";
-    private $pass = "KInyvkFHRxEzXDzBEmQbDXoRvyyNitaz";
+    private $pass = "ovYMhLKqFLLTwMVKhOfdCJiiVeOpnKPT";
 
     public function connect()
     {
