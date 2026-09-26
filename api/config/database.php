@@ -16,7 +16,7 @@ class Database
             $port = "3306";
             $db   = "railway";
             $user = "root";
-            $pass = "KInyvkFHRxEzXDzBEmQbDXoRvyyNitaz";
+            $pass = "ovYMhLKqFLLTwMVKhOfdCJiiVeOpnKPT";
 
             $dsn = "mysql:host={$host};port={$port};dbname={$db};charset=utf8mb4";
 
