@@ -78,6 +78,14 @@ switch($route)
     case "verify":
         $controller->verify();
         break;
+
+    case "resident_reports":
+        require_once "../routes/resident_reports.php";
+        break;
+
+    case "resident_export":
+        require_once "../routes/resident_export.php";
+        break;
     default:
         echo json_encode([
             "success" => false,
