@@ -33,10 +33,22 @@ class MaintenanceBillController
         $user =
             $GLOBALS['auth_user'];
 
+        /*
+        |--------------------------------------------------------------------------
+        | Subscription check
+        |--------------------------------------------------------------------------
+        */
+
         SubscriptionMiddleware::requireActive(
             $this->db,
             $user["society_id"]
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Read request
+        |--------------------------------------------------------------------------
+        */
 
         $data =
             json_decode(
@@ -46,34 +58,103 @@ class MaintenanceBillController
 
         /*
         |--------------------------------------------------------------------------
-        | Validate fields
+        | Validate required fields
         |--------------------------------------------------------------------------
         */
 
-        if(
+        if (
             empty($data['resident_id']) ||
             empty($data['bill_month']) ||
-            empty($data['amount'])
-        )
-        {
+            !isset($data['amount'])
+        ) {
             response(
                 false,
                 "Required fields missing"
             );
+
+            return;
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Resident ID validation
+        |--------------------------------------------------------------------------
+        */
 
         $residentId =
             $data['resident_id'];
 
+        if (
+            !is_numeric($residentId) ||
+            (int)$residentId <= 0
+        ) {
+            response(
+                false,
+                "Invalid resident ID"
+            );
+
+            return;
+        }
+
+        $residentId =
+            (int)$residentId;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Bill month
+        |
+        | New format:
+        | YYYY-MM
+        |
+        | Example:
+        | 2026-09
+        |--------------------------------------------------------------------------
+        */
+
         $billMonth =
             trim($data['bill_month']);
+
+        if (
+            !preg_match(
+                '/^\d{4}-(0[1-9]|1[0-2])$/',
+                $billMonth
+            )
+        ) {
+            response(
+                false,
+                "Invalid bill month. Use YYYY-MM format, for example 2026-09."
+            );
+
+            return;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Amount validation
+        |--------------------------------------------------------------------------
+        */
 
         $amount =
             $data['amount'];
 
+        if (
+            !is_numeric($amount) ||
+            (float)$amount <= 0
+        ) {
+            response(
+                false,
+                "Invalid amount"
+            );
+
+            return;
+        }
+
+        $amount =
+            (float)$amount;
+
         /*
         |--------------------------------------------------------------------------
-        | Create bill first
+        | Create bill
         |--------------------------------------------------------------------------
         */
 
@@ -89,17 +170,20 @@ class MaintenanceBillController
                 $amount
             );
 
-        if (!$result)
-        {
+        if (!$result) {
+
             response(
                 false,
                 "Failed to create bill"
             );
+
+            return;
         }
 
         /*
         |--------------------------------------------------------------------------
         | Bill created successfully
+        |
         | Send notification ONLY to that resident
         |--------------------------------------------------------------------------
         */
@@ -111,7 +195,7 @@ class MaintenanceBillController
 
             $notificationBody =
                 "A maintenance bill of ₹" .
-                $amount .
+                number_format($amount, 2) .
                 " has been generated for " .
                 $billMonth .
                 ".";
@@ -135,10 +219,10 @@ class MaintenanceBillController
                             "BILLS",
 
                         "resident_id" =>
-                            (string) $residentId,
+                            (string)$residentId,
 
                         "bill_month" =>
-                            (string) $billMonth
+                            (string)$billMonth
                     ]
                 );
 
@@ -146,7 +230,7 @@ class MaintenanceBillController
 
             /*
             |--------------------------------------------------------------------------
-            | Bill must remain successfully created even if FCM fails
+            | FCM failure must NOT cancel the bill
             |--------------------------------------------------------------------------
             */
 
@@ -205,23 +289,53 @@ class MaintenanceBillController
         $id =
             $_GET['id'] ?? 0;
 
+        /*
+        |--------------------------------------------------------------------------
+        | Validate bill ID
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            empty($id) ||
+            !is_numeric($id) ||
+            (int)$id <= 0
+        ) {
+            response(
+                false,
+                "Invalid bill ID"
+            );
+
+            return;
+        }
+
+        $id =
+            (int)$id;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Mark bill paid
+        |--------------------------------------------------------------------------
+        */
+
         $result =
             $this->bill->markPaid(
                 $id,
                 $user['society_id']
             );
 
-        if($result > 0)
-        {
+        if ($result > 0) {
+
             response(
                 true,
                 "Bill marked as paid"
             );
+
+            return;
         }
 
         response(
             false,
-            "Bill not found"
+            "Bill not found or already paid"
         );
     }
 }
