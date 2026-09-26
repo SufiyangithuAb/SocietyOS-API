@@ -6,7 +6,7 @@
 *.log
 
 # Composer
-/vendor/
+api/vendor/
 
 # IDE
 .idea/
