@@ -22,6 +22,12 @@ switch ($action)
 
         break;
 
+    case "pdf":
+
+        $controller->pdf();
+
+        break;
+
     default:
 
         response(
