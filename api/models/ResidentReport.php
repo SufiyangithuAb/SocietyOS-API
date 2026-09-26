@@ -441,8 +441,6 @@ class ResidentReport
 
                 c.created_at,
 
-                c.updated_at
-
             FROM complaints c
 
             LEFT JOIN residents r
