@@ -415,6 +415,12 @@ class ResidentReport
     |--------------------------------------------------------------------------
     */
 
+    /*
+|--------------------------------------------------------------------------
+| COMPLAINT LIST
+|--------------------------------------------------------------------------
+*/
+
     public function getComplaints(
         $societyId,
         $billMonth
@@ -437,9 +443,11 @@ class ResidentReport
 
                 c.description,
 
+                c.category,
+
                 c.status,
 
-                c.created_at,
+                c.created_at
 
             FROM complaints c
 
