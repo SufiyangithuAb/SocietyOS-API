@@ -7,55 +7,115 @@ try {
     $database = new Database();
     $db = $database->connect();
 
-    $db->exec("SET FOREIGN_KEY_CHECKS = 0;");
+    // Test resident
+    $residentId = 61;
+    $userId = 26;
+    $societyId = 7;
 
-    $sql = START TRANSACTION;
+    // Start transaction
+    $db->beginTransaction();
 
-DELETE FROM complaints
-WHERE resident_id = 61;
+    /*
+     * Delete records belonging to the resident.
+     * Delete child records BEFORE resident/user records.
+     */
 
-DELETE FROM maintenance_bills
-WHERE resident_id = 61;
+    // Complaints
+    $stmt = $db->prepare("
+        DELETE FROM complaints
+        WHERE resident_id = ?
+    ");
+    $stmt->execute([$residentId]);
 
-DELETE FROM payments
-WHERE user_id = 26;
+    $complaintsDeleted = $stmt->rowCount();
 
-DELETE FROM user_devices
-WHERE user_id = 26;
+    // Maintenance bills
+    $stmt = $db->prepare("
+        DELETE FROM maintenance_bills
+        WHERE resident_id = ?
+    ");
+    $stmt->execute([$residentId]);
 
-DELETE FROM residents
-WHERE id = 61
-AND user_id = 26
-AND society_id = 7;
+    $billsDeleted = $stmt->rowCount();
 
-DELETE FROM users
-WHERE id = 26
-AND society_id = 7;
+    // Payments belong to the user's account
+    $stmt = $db->prepare("
+        DELETE FROM payments
+        WHERE user_id = ?
+    ");
+    $stmt->execute([$userId]);
 
--- Check the transaction's result
-SELECT * FROM residents WHERE id = 61;
-SELECT * FROM users WHERE id = 26;
-SELECT * FROM complaints WHERE resident_id = 61;
-SELECT * FROM maintenance_bills WHERE resident_id = 61;
-SELECT * FROM user_devices WHERE user_id = 26;
+    $paymentsDeleted = $stmt->rowCount();
 
--- If everything looks correct:
-COMMIT;
+    // Registered devices
+    $stmt = $db->prepare("
+        DELETE FROM user_devices
+        WHERE user_id = ?
+    ");
+    $stmt->execute([$userId]);
 
-    $db->exec($sql);
+    $devicesDeleted = $stmt->rowCount();
 
-    $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
+    // Delete resident
+    $stmt = $db->prepare("
+        DELETE FROM residents
+        WHERE id = ?
+        AND user_id = ?
+        AND society_id = ?
+    ");
+    $stmt->execute([
+        $residentId,
+        $userId,
+        $societyId
+    ]);
 
-    echo "Tables created successfully.";
+    $residentsDeleted = $stmt->rowCount();
 
-} catch (PDOException $e) {
+    // Delete user account
+    $stmt = $db->prepare("
+        DELETE FROM users
+        WHERE id = ?
+        AND society_id = ?
+    ");
+    $stmt->execute([
+        $userId,
+        $societyId
+    ]);
 
-    try {
-        if (isset($db)) {
-            $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
-        }
-    } catch (Exception $ignored) {
+    $usersDeleted = $stmt->rowCount();
+
+    /*
+     * If everything reached this point,
+     * commit the transaction.
+     */
+    $db->commit();
+
+    echo "<h2>Resident deletion test completed successfully.</h2>";
+
+    echo "<p>Resident ID: {$residentId}</p>";
+    echo "<p>User ID: {$userId}</p>";
+    echo "<p>Society ID: {$societyId}</p>";
+
+    echo "<hr>";
+
+    echo "<p>Complaints deleted: {$complaintsDeleted}</p>";
+    echo "<p>Maintenance bills deleted: {$billsDeleted}</p>";
+    echo "<p>Payments deleted: {$paymentsDeleted}</p>";
+    echo "<p>Devices deleted: {$devicesDeleted}</p>";
+    echo "<p>Resident deleted: {$residentsDeleted}</p>";
+    echo "<p>User deleted: {$usersDeleted}</p>";
+
+    echo "<hr>";
+    echo "<strong>Transaction committed.</strong>";
+
+} catch (Exception $e) {
+
+    // Roll back EVERYTHING if anything fails
+    if (isset($db) && $db->inTransaction()) {
+        $db->rollBack();
     }
 
-    die($e->getMessage());
+    echo "<h2>Deletion failed.</h2>";
+    echo "<p>Transaction rolled back.</p>";
+    echo "<p>Error: " . htmlspecialchars($e->getMessage()) . "</p>";
 }
