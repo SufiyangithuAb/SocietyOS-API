@@ -61,9 +61,11 @@ class MaintenanceBill
     {
         $query = $this->conn->prepare(
             "UPDATE maintenance_bills
-             SET status='PAID'
-             WHERE id=?
-             AND society_id=?"
+            SET
+                status = 'PAID',
+                paid_at = NOW()
+            WHERE id = ?
+            AND society_id = ?"
         );
 
         $query->execute([
