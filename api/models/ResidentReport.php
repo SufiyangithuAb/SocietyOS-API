@@ -415,6 +415,12 @@ class ResidentReport
     |--------------------------------------------------------------------------
     */
 
+    /*
+|--------------------------------------------------------------------------
+| COMPLAINT LIST
+|--------------------------------------------------------------------------
+*/
+
     public function getComplaints(
         $societyId,
         $billMonth
@@ -422,47 +428,45 @@ class ResidentReport
     {
         $query = $this->conn->prepare(
             "SELECT
-
+    
                 c.id,
-
+    
                 c.resident_id,
-
+    
                 r.name AS resident_name,
-
+    
                 r.flat_number,
-
+    
                 r.tower,
-
+    
                 c.title,
-
+    
                 c.description,
-
+    
                 c.status,
-
-                c.created_at,
-
-                c.updated_at
-
+    
+                c.created_at
+    
             FROM complaints c
-
+    
             LEFT JOIN residents r
                 ON c.resident_id = r.id
-
+    
             WHERE c.society_id = ?
-
+    
             AND DATE_FORMAT(
                 c.created_at,
                 '%Y-%m'
             ) = ?
-
+    
             ORDER BY c.created_at DESC"
         );
-
+    
         $query->execute([
             $societyId,
             $billMonth
         ]);
-
+    
         return $query->fetchAll(
             PDO::FETCH_ASSOC
         );
