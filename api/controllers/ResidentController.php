@@ -40,6 +40,7 @@ class ResidentController
             empty($data['flat_number'])
         ) {
             response(false, "Required fields missing");
+            return;
         }
 
         try {
@@ -51,8 +52,12 @@ class ResidentController
 
                 $this->db->rollBack();
 
-                response(false, "Email already exists");
+                response(
+                    false,
+                    "Email already exists"
+                );
 
+                return;
             }
 
             // Temporary password
@@ -73,7 +78,6 @@ class ResidentController
                 $data['phone'] ?? '',
 
                 $temporaryPassword
-
             );
 
             // Create resident
@@ -94,7 +98,6 @@ class ResidentController
                 $data['tower'] ?? '',
 
                 $data['resident_type'] ?? 'OWNER'
-
             );
 
             if (!$resident) {
@@ -102,7 +105,6 @@ class ResidentController
                 throw new Exception(
                     "Unable to create resident."
                 );
-
             }
 
             $this->db->commit();
@@ -112,16 +114,16 @@ class ResidentController
                 "Resident created successfully. Temporary password: Welcome@123"
             );
 
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
 
-            $this->db->rollBack();
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
 
             response(
                 false,
                 $e->getMessage()
             );
-
         }
     }
 
@@ -146,13 +148,29 @@ class ResidentController
 
         $id = $_GET['id'] ?? 0;
 
+        if (empty($id) || !is_numeric($id)) {
+
+            response(
+                false,
+                "Invalid resident ID"
+            );
+
+            return;
+        }
+
         $resident = $this->resident->getById(
             $id,
             $user['society_id']
         );
 
         if (!$resident) {
-            response(false, "Resident not found");
+
+            response(
+                false,
+                "Resident not found"
+            );
+
+            return;
         }
 
         response(
@@ -168,21 +186,48 @@ class ResidentController
 
         $id = $_GET['id'] ?? 0;
 
-        $result = $this->resident->delete(
-            $id,
-            $user['society_id']
-        );
+        // Validate resident ID
+        if (empty($id) || !is_numeric($id)) {
 
-        if ($result) {
             response(
-                true,
-                "Resident deleted successfully"
+                false,
+                "Invalid resident ID"
             );
+
+            return;
         }
 
-        response(
-            false,
-            "Failed to delete resident"
-        );
+        $id = (int) $id;
+
+        try {
+
+            $result = $this->resident->deleteComplete(
+                $id,
+                $user['society_id']
+            );
+
+            if ($result['success']) {
+
+                response(
+                    true,
+                    $result['message'],
+                    $result['data'] ?? null
+                );
+
+                return;
+            }
+
+            response(
+                false,
+                $result['message']
+            );
+
+        } catch (Exception $e) {
+
+            response(
+                false,
+                "Unable to delete resident."
+            );
+        }
     }
 }
