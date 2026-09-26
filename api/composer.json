@@ -1,6 +1,7 @@
 {
     "require": {
         "google/auth": "^1.48",
-        "razorpay/razorpay": "^2.9"
+        "razorpay/razorpay": "^2.9",
+        "dompdf/dompdf": "^3.1"
     }
 }
