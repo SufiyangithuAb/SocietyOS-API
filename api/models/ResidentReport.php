@@ -9,6 +9,7 @@ class ResidentReport
         $this->conn = $db;
     }
 
+
     /*
     |--------------------------------------------------------------------------
     | RESIDENT STATISTICS
@@ -72,6 +73,136 @@ class ResidentReport
 
     /*
     |--------------------------------------------------------------------------
+    | BILL MONTH ALIASES
+    |--------------------------------------------------------------------------
+    |
+    | Your existing Android UI stores values such as:
+    |
+    | July
+    | July 2026
+    | August 2026
+    | Sept 2026
+    |
+    | But the report API receives:
+    |
+    | 2026-09
+    |
+    | This method converts the report month into all supported
+    | legacy/current database formats.
+    |
+    */
+
+    private function getBillMonthAliases($billMonth)
+    {
+        $billMonth = trim($billMonth);
+
+        $date = DateTime::createFromFormat(
+            '!Y-m',
+            $billMonth
+        );
+
+        if (!$date)
+        {
+            return [
+                $billMonth
+            ];
+        }
+
+        $year =
+            $date->format('Y');
+
+        $monthNumber =
+            $date->format('m');
+
+        $monthLong =
+            $date->format('F');
+
+        $monthShort =
+            $date->format('M');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Example September 2026:
+        |
+        | 2026-09
+        | September 2026
+        | Sep 2026
+        | Sept 2026
+        | September
+        | Sep
+        | Sept
+        |--------------------------------------------------------------------------
+        */
+
+        $aliases = [
+            $billMonth,
+
+            $monthLong . " " . $year,
+
+            $monthShort . " " . $year,
+
+            /*
+            | Special handling because your existing database
+            | contains "Sept 2026".
+            */
+            $monthLong === "September"
+                ? "Sept " . $year
+                : null,
+
+            /*
+            | Legacy month-only values.
+            */
+            $monthLong,
+
+            $monthShort,
+
+            $monthLong === "September"
+                ? "Sept"
+                : null
+        ];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Remove null values and duplicates
+        |--------------------------------------------------------------------------
+        */
+
+        $aliases =
+            array_filter(
+                $aliases,
+                function ($value) {
+                    return $value !== null &&
+                           $value !== '';
+                }
+            );
+
+        return array_values(
+            array_unique($aliases)
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CREATE SQL PLACEHOLDERS FOR BILL MONTH
+    |--------------------------------------------------------------------------
+    */
+
+    private function getMonthPlaceholders($aliases)
+    {
+        return implode(
+            ',',
+            array_fill(
+                0,
+                count($aliases),
+                '?'
+            )
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
     | BILL SUMMARY
     |--------------------------------------------------------------------------
     */
@@ -81,6 +212,16 @@ class ResidentReport
         $billMonth
     )
     {
+        $aliases =
+            $this->getBillMonthAliases(
+                $billMonth
+            );
+
+        $placeholders =
+            $this->getMonthPlaceholders(
+                $aliases
+            );
+
         $query = $this->conn->prepare(
             "SELECT
 
@@ -101,12 +242,19 @@ class ResidentReport
 
                 SUM(
                     CASE
-                        WHEN status IS NULL
-                             OR status != 'PAID'
+                        WHEN status = 'PENDING'
                         THEN 1
                         ELSE 0
                     END
                 ) AS pending_bills,
+
+                SUM(
+                    CASE
+                        WHEN status = 'OVERDUE'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) AS overdue_bills,
 
                 COALESCE(
                     SUM(
@@ -118,6 +266,28 @@ class ResidentReport
                     ),
                     0
                 ) AS paid_amount,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN status = 'PENDING'
+                            THEN amount
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS pending_amount,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN status = 'OVERDUE'
+                            THEN amount
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS overdue_amount,
 
                 COALESCE(
                     SUM(
@@ -135,13 +305,19 @@ class ResidentReport
 
             WHERE society_id = ?
 
-            AND bill_month = ?"
+            AND bill_month IN ($placeholders)"
         );
 
-        $query->execute([
-            $societyId,
-            $billMonth
-        ]);
+        $params = [
+            $societyId
+        ];
+
+        foreach ($aliases as $alias)
+        {
+            $params[] = $alias;
+        }
+
+        $query->execute($params);
 
         $result =
             $query->fetch(PDO::FETCH_ASSOC);
@@ -154,13 +330,17 @@ class ResidentReport
 
         $collectionPercentage = 0;
 
-        if ($totalBilled > 0) {
-
+        if ($totalBilled > 0)
+        {
             $collectionPercentage =
-                ($paidAmount / $totalBilled) * 100;
+                (
+                    $paidAmount /
+                    $totalBilled
+                ) * 100;
         }
 
         return [
+
             "total_bills" =>
                 (int)($result['total_bills'] ?? 0),
 
@@ -170,17 +350,29 @@ class ResidentReport
             "pending_bills" =>
                 (int)($result['pending_bills'] ?? 0),
 
+            "overdue_bills" =>
+                (int)($result['overdue_bills'] ?? 0),
+
             "total_billed" =>
                 $totalBilled,
 
             "paid_amount" =>
                 $paidAmount,
 
+            "pending_amount" =>
+                (float)($result['pending_amount'] ?? 0),
+
+            "overdue_amount" =>
+                (float)($result['overdue_amount'] ?? 0),
+
             "outstanding_amount" =>
                 (float)($result['outstanding_amount'] ?? 0),
 
             "collection_percentage" =>
-                round($collectionPercentage, 2)
+                round(
+                    $collectionPercentage,
+                    2
+                )
         ];
     }
 
@@ -196,6 +388,16 @@ class ResidentReport
         $billMonth
     )
     {
+        $aliases =
+            $this->getBillMonthAliases(
+                $billMonth
+            );
+
+        $placeholders =
+            $this->getMonthPlaceholders(
+                $aliases
+            );
+
         $query = $this->conn->prepare(
             "SELECT
 
@@ -217,6 +419,8 @@ class ResidentReport
 
                 mb.status,
 
+                mb.due_date,
+
                 mb.paid_at
 
             FROM maintenance_bills mb
@@ -226,7 +430,7 @@ class ResidentReport
 
             WHERE mb.society_id = ?
 
-            AND mb.bill_month = ?
+            AND mb.bill_month IN ($placeholders)
 
             ORDER BY
                 r.tower ASC,
@@ -234,10 +438,16 @@ class ResidentReport
                 r.name ASC"
         );
 
-        $query->execute([
-            $societyId,
-            $billMonth
-        ]);
+        $params = [
+            $societyId
+        ];
+
+        foreach ($aliases as $alias)
+        {
+            $params[] = $alias;
+        }
+
+        $query->execute($params);
 
         return $query->fetchAll(
             PDO::FETCH_ASSOC
@@ -256,17 +466,31 @@ class ResidentReport
         $billMonth
     )
     {
+        $aliases =
+            $this->getBillMonthAliases(
+                $billMonth
+            );
+
+        $placeholders =
+            $this->getMonthPlaceholders(
+                $aliases
+            );
+
         $query = $this->conn->prepare(
             "SELECT
 
-                COALESCE(r.tower, 'Unknown')
-                    AS tower,
+                COALESCE(
+                    r.tower,
+                    'Unknown'
+                ) AS tower,
 
-                COUNT(DISTINCT r.id)
-                    AS residents,
+                COUNT(
+                    DISTINCT r.id
+                ) AS residents,
 
-                COUNT(mb.id)
-                    AS total_bills,
+                COUNT(
+                    mb.id
+                ) AS total_bills,
 
                 COALESCE(
                     SUM(mb.amount),
@@ -283,6 +507,28 @@ class ResidentReport
                     ),
                     0
                 ) AS paid_amount,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN mb.status = 'PENDING'
+                            THEN mb.amount
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS pending_amount,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN mb.status = 'OVERDUE'
+                            THEN mb.amount
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS overdue_amount,
 
                 COALESCE(
                     SUM(
@@ -304,7 +550,7 @@ class ResidentReport
 
                 AND mb.society_id = r.society_id
 
-                AND mb.bill_month = ?
+                AND mb.bill_month IN ($placeholders)
 
             WHERE r.society_id = ?
 
@@ -313,10 +559,17 @@ class ResidentReport
             ORDER BY r.tower ASC"
         );
 
-        $query->execute([
-            $billMonth,
-            $societyId
-        ]);
+        $params = [];
+
+        foreach ($aliases as $alias)
+        {
+            $params[] = $alias;
+        }
+
+        $params[] =
+            $societyId;
+
+        $query->execute($params);
 
         return $query->fetchAll(
             PDO::FETCH_ASSOC
@@ -332,7 +585,7 @@ class ResidentReport
 
     public function getComplaintSummary(
         $societyId,
-        $billMonth
+        $reportMonth
     )
     {
         $query = $this->conn->prepare(
@@ -347,6 +600,14 @@ class ResidentReport
                         ELSE 0
                     END
                 ) AS open_complaints,
+
+                SUM(
+                    CASE
+                        WHEN status = 'ASSIGNED'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) AS assigned_complaints,
 
                 SUM(
                     CASE
@@ -384,27 +645,60 @@ class ResidentReport
 
         $query->execute([
             $societyId,
-            $billMonth
+            $reportMonth
         ]);
 
         $result =
             $query->fetch(PDO::FETCH_ASSOC);
 
+        $total =
+            (int)($result['total_complaints'] ?? 0);
+
+        $resolved =
+            (int)($result['resolved_complaints'] ?? 0);
+
+        $closed =
+            (int)($result['closed_complaints'] ?? 0);
+
+        $completed =
+            $resolved + $closed;
+
+        $resolutionPercentage = 0;
+
+        if ($total > 0)
+        {
+            $resolutionPercentage =
+                (
+                    $completed /
+                    $total
+                ) * 100;
+        }
+
         return [
+
             "total_complaints" =>
-                (int)($result['total_complaints'] ?? 0),
+                $total,
 
             "open_complaints" =>
                 (int)($result['open_complaints'] ?? 0),
+
+            "assigned_complaints" =>
+                (int)($result['assigned_complaints'] ?? 0),
 
             "in_progress_complaints" =>
                 (int)($result['in_progress_complaints'] ?? 0),
 
             "resolved_complaints" =>
-                (int)($result['resolved_complaints'] ?? 0),
+                $resolved,
 
             "closed_complaints" =>
-                (int)($result['closed_complaints'] ?? 0)
+                $closed,
+
+            "resolution_percentage" =>
+                round(
+                    $resolutionPercentage,
+                    2
+                )
         ];
     }
 
@@ -415,58 +709,55 @@ class ResidentReport
     |--------------------------------------------------------------------------
     */
 
-    /*
-|--------------------------------------------------------------------------
-| COMPLAINT LIST
-|--------------------------------------------------------------------------
-*/
-
     public function getComplaints(
         $societyId,
-        $billMonth
+        $reportMonth
     )
     {
         $query = $this->conn->prepare(
             "SELECT
-    
+
                 c.id,
-    
+
                 c.resident_id,
-    
+
                 r.name AS resident_name,
-    
+
                 r.flat_number,
-    
+
                 r.tower,
-    
+
                 c.title,
-    
+
                 c.description,
-    
+
+                c.category,
+
                 c.status,
-    
+
                 c.created_at
-    
+
             FROM complaints c
-    
+
             LEFT JOIN residents r
                 ON c.resident_id = r.id
-    
+
             WHERE c.society_id = ?
-    
+
             AND DATE_FORMAT(
                 c.created_at,
                 '%Y-%m'
             ) = ?
-    
-            ORDER BY c.created_at DESC"
+
+            ORDER BY
+                c.created_at DESC"
         );
-    
+
         $query->execute([
             $societyId,
-            $billMonth
+            $reportMonth
         ]);
-    
+
         return $query->fetchAll(
             PDO::FETCH_ASSOC
         );
